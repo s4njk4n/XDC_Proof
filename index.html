@@ -1,1 +1,673 @@
-hello
+<!DOCTYPE html>
+<html lang="en" class="transition-colors duration-300">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>XDC Proof - Verifiable XDC Payment Receipts</title>
+    <!-- MIT License -->
+    <meta name="license" content="MIT">
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Poppins -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome CDN -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
+    <!-- jsPDF CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <!-- QR Code CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.0/build/qrcode.min.js"></script>
+    <!-- JSZip CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+    <style>
+        :root {
+            --bg-gradient: linear-gradient(180deg, #2E2A6A 0%, #4A3E8A 100%);
+            --card-bg: rgba(255, 255, 255, 0.08);
+            --text: #F3E8FF;
+            --text-secondary: #E2D1F9;
+            --text-muted: #D4C2F0;
+            --border: rgba(255, 255, 255, 0.15);
+            --input-bg: #2E2A6A;
+            --btn-bg: #2E2A6A;
+            --btn-text: #A3E4FF;
+            --success: #6EE7B7;
+            --error: #FCA5A5;
+        }
+        [data-theme="dark"] {
+            --bg-gradient: linear-gradient(180deg, #0f0f23 0%, #1a1a2e 100%);
+            --card-bg: rgba(255, 255, 255, 0.05);
+            --text: #e0e0ff;
+            --text-secondary: #c0c0ff;
+            --text-muted: #a0a0d0;
+            --border: rgba(255, 255, 255, 0.1);
+            --input-bg: #1a1a2e;
+            --btn-bg: #1a1a2e;
+            --btn-text: #a0a0ff;
+        }
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: var(--bg-gradient);
+            color: var(--text);
+            margin: 0;
+            overflow-x: hidden;
+            transition: background 0.3s ease;
+        }
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            backdrop-filter: blur(6px);
+            border-radius: 20px;
+            padding: 1.5rem;
+        }
+        input, textarea {
+            background: var(--input-bg);
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+        .btn {
+            background: var(--btn-bg);
+            color: var(--btn-text);
+            border: 1px solid var(--border);
+        }
+        .success { color: var(--success); }
+        .error { color: var(--error); }
+        .hidden { display: none; }
+        .link { 
+            color: #A3E4FF; 
+            text-decoration: underline; 
+            font-size: 0.75rem; 
+            display: inline-block;
+            margin-right: auto;
+        }
+        .link:hover { text-decoration: none; }
+        .footer-links {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 1rem;
+            font-size: 0.75rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- Dark Mode Toggle -->
+    <div class="fixed top-4 right-4 z-50">
+        <button onclick="toggleTheme()" class="bg-[#2E2A6A] text-[#A3E4FF] p-2 rounded-full hover:bg-[#3A3570] transition-all">
+            <i id="themeIcon" class="fas fa-moon"></i>
+        </button>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="py-6 px-6 sticky top-0 z-40 bg-opacity-70 backdrop-blur-md" style="background: rgba(46, 42, 106, 0.7);">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <h1 class="text-3xl font-bold text-[#F3E8FF] max-sm:text-xl">XDC Proof</h1>
+            <div class="nav-items space-x-8 max-sm:space-x-4">
+                <a href="#hero" class="text-[#F3E8FF] hover:text-[#A3E4FF] text-lg max-sm:text-sm">Home</a>
+                <a href="https://s4njk4n.github.io/XDCOutpost/#services" class="text-[#F3E8FF] hover:text-[#A3E4FF] text-lg max-sm:text-sm">Back to Outpost</a>
+                <a href="#contact" class="text-[#F3E8FF] hover:text-[#A3E4FF] text-lg max-sm:text-sm">Contact</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="hero">
+        <div id="background">
+            <div id="particles"></div>
+        </div>
+        <div class="max-w-5xl mx-auto p-6">
+            <h1 class="text-5xl md:text-5xl font-semibold text-[#F3E8FF] mb-4 max-sm:text-3xl tracking-tight">XDC Proof</h1>
+            <p class="text-xl md:text-2xl text-[#E2D1F9] mb-12 max-sm:text-base">Generate verifiable, professional PDF receipts for XDC Network payments. Trusted for trade finance, accounting, and transparency.</p>
+
+            <!-- 1. SINGLE RECEIPT -->
+            <div class="card hover-effect max-w-lg mx-auto mb-8 p-6">
+                <h2 class="text-2xl font-bold text-[#A3E4FF] mb-4">Generate Single Receipt</h2>
+                <input type="text" id="txHash" placeholder="XDC Transaction Hash (e.g., 0x...)" class="w-full p-3 mb-4 rounded-lg bg-[#2E2A6A] text-[#F3E8FF] border border-[#A3E4FF]/30 focus:outline-none max-sm:text-sm">
+                <textarea id="description" placeholder="Payment Purpose (e.g., Invoice #123: 500 Widgets)" class="w-full p-3 mb-6 rounded-lg bg-[#2E2A6A] text-[#F3E8FF] border border-[#A3E4FF]/30 focus:outline-none max-sm:text-sm" rows="3"></textarea>
+
+                <div class="grid md:grid-cols-2 gap-6 mb-6">
+                    <div>
+                        <h3 class="text-lg text-[#A3E4FF] mb-2">Sender Details (Optional)</h3>
+                        <input type="text" id="senderName" placeholder="Sender Name" class="w-full p-3 mb-3 rounded-lg bg-[#2E2A6A] text-[#F3E8FF] border border-[#A3E4FF]/30 focus:outline-none max-sm:text-sm">
+                        <input type="text" id="senderAddress" placeholder="Sender Address" class="w-full p-3 mb-3 rounded-lg bg-[#2E2A6A] text-[#F3E8FF] border border-[#A3E4FF]/30 focus:outline-none max-sm:text-sm">
+                        <input type="text" id="senderPhone" placeholder="Sender Phone" class="w-full p-3 mb-3 rounded-lg bg-[#2E2A6A] text-[#F3E8FF] border border-[#A3E4FF]/30 focus:outline-none max-sm:text-sm">
+                        <input type="text" id="senderEmail" placeholder="Sender Email" class="w-full p-3 mb-3 rounded-lg bg-[#2E2A6A] text-[#F3E8FF] border border-[#A3E4FF]/30 focus:outline-none max-sm:text-sm">
+                        <input type="text" id="senderLogo" placeholder="Sender Logo URL (CORS-enabled)" class="w-full p-3 mb-3 rounded-lg bg-[#2E2A6A] text-[#F3E8FF] border border-[#A3E4FF]/30 focus:outline-none max-sm:text-sm">
+                    </div>
+                    <div>
+                        <h3 class="text-lg text-[#A3E4FF] mb-2">Receiver Details (Optional)</h3>
+                        <input type="text" id="receiverName" placeholder="Receiver Name" class="w-full p-3 mb-3 rounded-lg bg-[#2E2A6A] text-[#F3E8FF] border border-[#A3E4FF]/30 focus:outline-none max-sm:text-sm">
+                        <input type="text" id="receiverAddress" placeholder="Receiver Address" class="w-full p-3 mb-3 rounded-lg bg-[#2E2A6A] text-[#F3E8FF] border border-[#A3E4FF]/30 focus:outline-none max-sm:text-sm">
+                        <input type="text" id="receiverPhone" placeholder="Receiver Phone" class="w-full p-3 mb-3 rounded-lg bg-[#2E2A6A] text-[#F3E8FF] border border-[#A3E4FF]/30 focus:outline-none max-sm:text-sm">
+                        <input type="text" id="receiverEmail" placeholder="Receiver Email" class="w-full p-3 mb-3 rounded-lg bg-[#2E2A6A] text-[#F3E8FF] border border-[#A3E4FF]/30 focus:outline-none max-sm:text-sm">
+                    </div>
+                </div>
+
+                <p id="errorMessage" class="text-[#FCA5A5] text-sm mt-2 hidden">Invalid input.</p>
+                <button onclick="generateReceipt()" class="w-full bg-gradient-to-r from-[#A3E4FF] to-[#FFD1DC] text-[#2E2A6A] font-semibold py-3 px-6 rounded-full hover-effect max-sm:py-2 max-sm:text-sm">Generate Proof</button>
+            </div>
+
+            <!-- 2. BULK ENTITY MAPPING -->
+            <div class="card hover-effect max-w-lg mx-auto mb-8 p-6">
+                <div class="flex items-center justify-between mb-3">
+                    <h2 class="text-xl font-semibold text-[#A3E4FF]">Bulk Entity Mapping (Optional)</h2>
+                    <button onclick="openCsvHelp()" class="text-xs bg-[#A3E4FF]/20 hover:bg-[#A3E4FF]/30 text-[#A3E4FF] rounded-full w-6 h-6 flex items-center justify-center">?</button>
+                </div>
+                <p class="text-sm text-[#D4C2F0] mb-4">Auto-fill company details for known addresses.</p>
+                <input type="file" id="csvFile" accept=".csv" class="hidden">
+                <div class="flex gap-2 mb-3">
+                    <button onclick="document.getElementById('csvFile').click()" class="flex-1 btn py-2 px-4 rounded-lg text-sm">Upload CSV</button>
+                    <button onclick="toggleCsvPaste()" class="flex-1 btn py-2 px-4 rounded-lg text-sm">Paste CSV</button>
+                </div>
+                <div id="csvPasteArea" class="hidden mb-3">
+                    <textarea id="csvText" placeholder="Paste CSV here..." class="w-full p-3 rounded-lg bg-[#2E2A6A] text-[#F3E8FF] border border-[#A3E4FF]/30 focus:outline-none text-sm" rows="4"></textarea>
+                    <button onclick="saveCsvFromText()" class="mt-2 w-full bg-[#A3E4FF] text-[#2E2A6A] py-2 px-4 rounded-lg font-semibold text-sm hover-effect">Save CSV</button>
+                </div>
+                <div id="csvStatus" class="text-sm mt-2"></div>
+                <div class="footer-links">
+                    <a href="#" onclick="downloadSampleCsv(); return false;" class="link">Download Sample CSV</a>
+                    <button onclick="clearCsvData()" class="text-xs text-[#FCA5A5] hover:underline">Clear saved CSV</button>
+                </div>
+            </div>
+
+            <!-- 3. BATCH GENERATE -->
+            <div class="card hover-effect max-w-lg mx-auto p-6">
+                <div class="flex items-center justify-between mb-3">
+                    <h2 class="text-xl font-semibold text-[#A3E4FF]">Batch Generate (CSV)</h2>
+                    <button onclick="openBatchHelp()" class="text-xs bg-[#A3E4FF]/20 hover:bg-[#A3E4FF]/30 text-[#A3E4FF] rounded-full w-6 h-6 flex items-center justify-center">?</button>
+                </div>
+                <p class="text-sm text-[#D4C2F0] mb-4">Generate 100+ receipts at once from a CSV.</p>
+                <input type="file" id="batchCsvFile" accept=".csv" class="hidden">
+                <div class="flex gap-2 mb-3">
+                    <button onclick="document.getElementById('batchCsvFile').click()" class="flex-1 btn py-2 px-4 rounded-lg text-sm">Upload CSV</button>
+                    <div class="flex-1"></div>
+                </div>
+                <div id="batchStatus" class="text-sm mt-2"></div>
+                <div id="batchProgress" class="hidden mt-3">
+                    <div class="bg-[#3A3570] rounded-full h-2 overflow-hidden">
+                        <div id="progressBar" class="bg-gradient-to-r from-[#A3E4FF] to-[#FFD1DC] h-full transition-all duration-300" style="width: 0%"></div>
+                    </div>
+                    <p class="text-xs mt-1 text-[#D4C2F0]" id="progressText">0 / 0</p>
+                    <button onclick="cancelBatch()" class="mt-2 text-xs text-[#FCA5A5] hover:underline">Cancel</button>
+                </div>
+                <button id="generateBatchBtn" onclick="startBatchGeneration()" class="mt-3 w-full bg-gradient-to-r from-[#A3E4FF] to-[#FFD1DC] text-[#2E2A6A] font-semibold py-2 px-4 rounded-lg hover-effect text-sm hidden">Generate All</button>
+                <div class="footer-links">
+                    <a href="#" onclick="downloadSampleBatchCsv(); return false;" class="link">Download Sample CSV</a>
+                    <span class="text-xs text-[#FCA5A5] opacity-0">Clear saved CSV</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="py-20 px-6">
+        <div class="max-w-5xl mx-auto text-center">
+            <h2 class="text-4xl md:text-5xl font-bold text-[#A3E4FF] mb-12 max-sm:text-2xl">Connect</h2>
+            <p class="text-[#E2D1F9] mb-8 text-lg max-sm:text-sm">Need help with XDC Proof or custom integrations? Reach out:</p>
+            <div class="social-links flex justify-center flex-wrap gap-8 max-sm:gap-4">
+                <a href="https://t.me/s4njk4n" target="_blank" class="social-icon text-3xl max-sm:text-xl" aria-label="Telegram">
+                    <i class="fa-brands fa-telegram"></i> <span class="text-lg max-sm:text-sm ml-2">Telegram: @s4njk4n</span>
+                </a>
+                <a href="https://discord.com/users/852434672793288724" target="_blank" class="social-icon text-3xl max-sm:text-xl" aria-label="Discord">
+                    <i class="fa-brands fa-discord"></i> <span class="text-lg max-sm:text-sm ml-2">Discord: @s4njk4n</span>
+                </a>
+                <a href="https://x.com/s4njk4n" target="_blank" class="social-icon text-3xl max-sm:text-xl" aria-label="X">
+                    <i class="fa-brands fa-x-twitter"></i> <span class="text-lg max-sm:text-sm ml-2">X: @s4njk4n</span>
+                </a>
+                <a href="https://github.com/s4njk4n" target="_blank" class="social-icon text-3xl max-sm:text-xl" aria-label="GitHub">
+                    <i class="fa-brands fa-github"></i> <span class="text-lg max-sm:text-sm ml-2">GitHub: s4njk4n</span>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="py-10 px-6 text-center text-[#D4C2F0]">
+        <p class="max-sm:text-sm">
+            © 2025 XDC Proof. 
+            <a href="https://github.com/s4njk4n/XDC_Proof/blob/main/LICENSE" target="_blank" class="text-[#A3E4FF] hover:underline">MIT License</a>. 
+            Powered by <a href="https://github.com/s4njk4n" target="_blank" class="text-[#A3E4FF] hover:underline">s4njk4n</a>.
+        </p>
+    </footer>
+
+    <!-- Modals -->
+    <div id="csvHelpModal" class="fixed inset-0 bg-black/70 flex items-center justify-center z-50 hidden px-4" onclick="closeCsvHelp()">
+        <div class="bg-[#2E2A6A] rounded-2xl p-6 max-w-md w-full max-h-screen overflow-y-auto" onclick="event.stopPropagation()">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold text-[#A3E4FF]">How to Use CSV Mapping</h3>
+                <button onclick="closeCsvHelp()" class="text-[#F3E8FF] hover:text-[#FCA5A5]">X</button>
+            </div>
+            <div class="text-sm text-[#E2D1F9] space-y-3">
+                <p><strong>1. Create a CSV file</strong> with this format:</p>
+                <pre class="bg-[#1A162E] p-3 rounded-lg text-xs overflow-x-auto">
+"address","name","company","address_line","phone","email","logo_url"
+"xdc1a2b3c4d5e6f7...","Acme Corp","Acme Corporation","123 Main St, Suite 100, New York","555-1000","acme@corp.com","https://i.imgur.com/acme.png"
+"xdc9f8e7d6c5b4a3...","Global Trade","Global Trade Ltd","456 Port Ave, Singapore","555-2000","global@trade.com","https://i.imgur.com/global.png"</pre>
+                <p class="mt-3"><strong>Important:</strong> Wrap <strong>every field in quotes</strong> to handle commas.</p>
+                <p><strong>2. Upload or paste it once</strong> — it’s saved in your browser.</p>
+                <p><strong>3. Paste any XDC transaction hash</strong> → XDC Proof auto-fills sender/receiver.</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="batchHelpModal" class="fixed inset-0 bg-black/70 flex items-center justify-center z-50 hidden px-4" onclick="closeBatchHelp()">
+        <div class="bg-[#2E2A6A] rounded-2xl p-6 max-w-md w-full max-h-screen overflow-y-auto" onclick="event.stopPropagation()">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold text-[#A3E4FF]">How to Batch Generate</h3>
+                <button onclick="closeBatchHelp()" class="text-[#F3E8FF] hover:text-[#FCA5A5]">X</button>
+            </div>
+            <div class="text-sm text-[#E2D1F9] space-y-3">
+                <p><strong>1. Create a CSV file</strong> with this format:</p>
+                <pre class="bg-[#1A162E] p-3 rounded-lg text-xs overflow-x-auto">
+"tx_hash","description"
+"0x7f8c9d2b1a3e4f5c6d7b8a9e0f1c2d3b4e5a6f7c8d9e0a1b2c3d4e5f6a7b8c9","Invoice #501: 500 Widgets"
+"0x1a2b3c4d5e6f7g8h9i0j1k2l3m4n5o6p7q8r9s0t1u2v3w4x5y6z","Consulting Q3 2025"</pre>
+                <p><strong>2. Upload it</strong> using the button above.</p>
+                <p><strong>3. Click "Generate All"</strong> → Download a ZIP with all PDFs.</p>
+                <p class="mt-4"><strong>Tip:</strong> Use your <strong>Bulk Entity Mapping</strong> to auto-fill details.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // === Theme Toggle ===
+        function toggleTheme() {
+            const html = document.documentElement;
+            const icon = document.getElementById('themeIcon');
+            if (html.hasAttribute('data-theme')) {
+                html.removeAttribute('data-theme');
+                icon.classList.replace('fa-sun', 'fa-moon');
+                localStorage.setItem('theme', 'light');
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                icon.classList.replace('fa-moon', 'fa-sun');
+                localStorage.setItem('theme', 'dark');
+            }
+        }
+        if (localStorage.getItem('theme') === 'dark') {
+            document.documentElement.setAttribute('data-theme', 'dark');
+            document.getElementById('themeIcon').classList.replace('fa-moon', 'fa-sun');
+        }
+
+        // === Download Sample CSVs ===
+        function downloadSampleCsv() {
+            const csv = `"address","name","company","address_line","phone","email","logo_url"
+"xdc1a2b3c4d5e6f7g8h9i0j1k2l3m4n5o6p7q8r9s0t","Acme Corp","Acme Corporation","123 Main St, Suite 100, New York, NY 10001","555-1000","acme@corp.com","https://i.imgur.com/acme.png"
+"xdc9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0","Global Trade","Global Trade Ltd","456 Port Ave, #12-34, Singapore 098765","555-2000","global@trade.com","https://i.imgur.com/global.png"`;
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'xdc_proof_entities_sample.csv';
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function downloadSampleBatchCsv() {
+            const csv = `"tx_hash","description"
+"0x7f8c9d2b1a3e4f5c6d7b8a9e0f1c2d3b4e5a6f7c8d9e0a1b2c3d4e5f6a7b8c9","Invoice #501: 500 Widgets"
+"0x1a2b3c4d5e6f7g8h9i0j1k2l3m4n5o6p7q8r9s0t1u2v3w4x5y6z","Consulting Q3 2025"`;
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'xdc_proof_batch_sample.csv';
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // === Modal Controls ===
+        function openCsvHelp() { document.getElementById('csvHelpModal').classList.remove('hidden'); }
+        function closeCsvHelp() { document.getElementById('csvHelpModal').classList.add('hidden'); }
+        function openBatchHelp() { document.getElementById('batchHelpModal').classList.remove('hidden'); }
+        function closeBatchHelp() { document.getElementById('batchHelpModal').classList.add('hidden'); }
+
+        // === CSV Parsing ===
+        let entities = {};
+
+        function parseCsvLine(line) {
+            const result = [];
+            let current = '';
+            let inQuotes = false;
+            for (let i = 0; i < line.length; i++) {
+                const char = line[i];
+                const nextChar = line[i + 1];
+                if (char === '"') {
+                    if (inQuotes && nextChar === '"') { current += '"'; i++; }
+                    else { inQuotes = !inQuotes; }
+                } else if (char === ',' && !inQuotes) {
+                    result.push(current);
+                    current = '';
+                } else {
+                    current += char;
+                }
+            }
+            result.push(current);
+            return result;
+        }
+
+        function parseCsv(csvText) {
+            entities = {};
+            const lines = csvText.trim().split('\n');
+            if (lines.length < 1) return;
+            const headers = parseCsvLine(lines[0]).map(h => h.toLowerCase());
+            for (let i = 1; i < lines.length; i++) {
+                const values = parseCsvLine(lines[i]);
+                if (values.length < 2) continue;
+                const addr = values[0].trim().toLowerCase();
+                const entry = {};
+                headers.forEach((h, idx) => { if (h !== 'address') entry[h] = values[idx]?.trim() || ''; });
+                entities[addr] = entry;
+            }
+        }
+
+        function loadSavedCsv() {
+            const saved = localStorage.getItem('xdcProofEntities');
+            if (saved) {
+                parseCsv(saved);
+                document.getElementById('csvStatus').innerHTML = `<span class="success">Loaded ${Object.keys(entities).length} entities.</span>`;
+            } else {
+                document.getElementById('csvStatus').innerHTML = '<span class="text-[#D4C2F0]">No saved CSV. Upload or paste one.</span>';
+            }
+        }
+
+        function saveCsvToStorage(csvText) {
+            localStorage.setItem('xdcProofEntities', csvText);
+            parseCsv(csvText);
+            document.getElementById('csvStatus').innerHTML = `<span class="success">Saved ${Object.keys(entities).length} entities!</span>`;
+        }
+
+        function clearCsvData() {
+            localStorage.removeItem('xdcProofEntities');
+            entities = {};
+            document.getElementById('csvStatus').innerHTML = '<span class="error">CSV cleared.</span>';
+        }
+
+        function toggleCsvPaste() {
+            document.getElementById('csvPasteArea').classList.toggle('hidden');
+        }
+
+        function saveCsvFromText() {
+            const text = document.getElementById('csvText').value.trim();
+            if (!text) { alert('Please paste valid CSV data.'); return; }
+            saveCsvToStorage(text);
+            document.getElementById('csvPasteArea').classList.add('hidden');
+        }
+
+        document.getElementById('csvFile').addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            const text = await file.text();
+            saveCsvToStorage(text);
+        });
+
+        // === Batch Generation ===
+        let batchTxs = [];
+        let isBatchRunning = false;
+        let cancelBatchFlag = false;
+
+        document.getElementById('batchCsvFile').addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            const text = await file.text();
+            const lines = text.trim().split('\n');
+            if (lines.length < 2) {
+                document.getElementById('batchStatus').innerHTML = '<span class="error">Invalid CSV. Must have tx_hash,description</span>';
+                return;
+            }
+            batchTxs = lines.slice(1).map(line => {
+                const [hash, desc] = parseCsvLine(line);
+                return { hash: hash.trim(), description: desc.trim() };
+            }).filter(t => t.hash && t.description);
+            document.getElementById('batchStatus').innerHTML = `<span class="success">Loaded ${batchTxs.length} transactions. Ready.</span>`;
+            document.getElementById('generateBatchBtn').classList.remove('hidden');
+        });
+
+        function startBatchGeneration() {
+            if (batchTxs.length === 0) return;
+            isBatchRunning = true;
+            cancelBatchFlag = false;
+            document.getElementById('batchProgress').classList.remove('hidden');
+            document.getElementById('generateBatchBtn').classList.add('hidden');
+            generateBatchPDFs();
+        }
+
+        function cancelBatch() {
+            cancelBatchFlag = true;
+            isBatchRunning = false;
+            document.getElementById('batchProgress').classList.add('hidden');
+            document.getElementById('batchStatus').innerHTML = '<span class="error">Batch cancelled.</span>';
+        }
+
+        async function generateBatchPDFs() {
+            const zip = new JSZip();
+            let completed = 0;
+
+            for (let i = 0; i < batchTxs.length; i++) {
+                if (cancelBatchFlag) break;
+                const { hash, description } = batchTxs[i];
+                try {
+                    const tx = await fetchTx(hash);
+                    await autoFillFromTx(tx);
+                    const pdfBlob = await generateSinglePDF(tx, description);
+                    zip.file(`XDC_Proof_${hash.slice(0, 10)}.pdf`, pdfBlob);
+                } catch (e) {
+                    console.error(`Failed ${hash}:`, e);
+                }
+                completed++;
+                const percent = (completed / batchTxs.length) * 100;
+                document.getElementById('progressBar').style.width = `${percent}%`;
+                document.getElementById('progressText').textContent = `${completed} / ${batchTxs.length}`;
+            }
+
+            if (completed > 0 && !cancelBatchFlag) {
+                const zipBlob = await zip.generateAsync({ type: 'blob' });
+                const url = URL.createObjectURL(zipBlob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `XDC_Proof_Batch_${new Date().toISOString().slice(0,10)}.zip`;
+                a.click();
+                URL.revokeObjectURL(url);
+            }
+
+            isBatchRunning = false;
+            document.getElementById('batchProgress').classList.add('hidden');
+            document.getElementById('generateBatchBtn').classList.remove('hidden');
+        }
+
+        async function fetchTx(hash) {
+            const response = await fetch('https://rpc.xinfin.network', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ jsonrpc: '2.0', method: 'eth_getTransactionByHash', params: [hash], id: 1 })
+            });
+            const data = await response.json();
+            if (!data.result || !data.result.hash) throw new Error('Not found');
+            return data.result;
+        }
+
+        async function generateSinglePDF(tx, description) {
+            const valueXDC = (parseInt(tx.value || '0x0', 16) / 1e18).toFixed(6);
+            const senderAddr = tx.from.toLowerCase().replace(/^0x/, 'xdc');
+            const receiverAddr = tx.to ? tx.to.toLowerCase().replace(/^0x/, 'xdc') : 'Contract Creation';
+
+            const sender = {
+                name: document.getElementById('senderName').value || 'Unknown Sender',
+                address: document.getElementById('senderAddress').value || '',
+                phone: document.getElementById('senderPhone').value || '',
+                email: document.getElementById('senderEmail').value || '',
+                logo_url: document.getElementById('senderLogo').value || ''
+            };
+            const receiver = {
+                name: document.getElementById('receiverName').value || 'Unknown Receiver',
+                address: document.getElementById('receiverAddress').value || '',
+                phone: document.getElementById('receiverPhone').value || '',
+                email: document.getElementById('receiverEmail').value || ''
+            };
+
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            doc.setFont('helvetica');
+            doc.setFontSize(18);
+            doc.setTextColor(44, 62, 80);
+            doc.text('XDC Payment Proof', 105, 25, { align: 'center' });
+
+            let y = 40;
+            if (sender.logo_url) {
+                try {
+                    const img = new Image();
+                    img.crossOrigin = 'Anonymous';
+                    img.src = sender.logo_url + '?t=' + Date.now();
+                    await new Promise(resolve => {
+                        img.onload = () => { doc.addImage(img, 'PNG', 15, 10, 30, 30); resolve(); };
+                        img.onerror = () => { resolve(); };
+                    });
+                } catch (e) {}
+            }
+
+            const scanUrl = `https://xdc.blocksscan.io/tx/${tx.hash}`;
+            const qrCanvas = document.createElement('canvas');
+            await QRCode.toCanvas(qrCanvas, scanUrl, { width: 80, margin: 1 });
+            const qrDataUrl = qrCanvas.toDataURL('image/png');
+            doc.addImage(qrDataUrl, 'PNG', 165, 10, 30, 30);
+            doc.setFontSize(8);
+            doc.setTextColor(100, 100, 100);
+            doc.text('Scan to Verify', 165, 45, { align: 'center' });
+
+            doc.setFontSize(12);
+            doc.text('Transaction Details', 15, y);
+            doc.line(15, y + 3, 195, y + 3);
+            y += 12;
+            ['Hash', 'From', 'To', 'Amount', 'Date'].forEach((label, i) => {
+                const value = i === 0 ? tx.hash :
+                             i === 1 ? `${sender.name} (${senderAddr})` :
+                             i === 2 ? `${receiver.name} (${receiverAddr})` :
+                             i === 3 ? `${valueXDC} XDC` :
+                             new Date().toLocaleString();
+                const lines = doc.splitTextToSize(`${label}: ${value}`, 180);
+                doc.text(lines, 15, y);
+                y += lines.length * 7;
+            });
+
+            y += 10;
+            doc.text('Payment Purpose', 15, y);
+            doc.line(15, y + 3, 195, y + 3);
+            y += 12;
+            doc.splitTextToSize(description, 180).forEach(line => {
+                doc.text(line, 15, y);
+                y += 7;
+            });
+            y += 15;
+
+            ['Sender', 'Receiver'].forEach((role, i) => {
+                const info = i === 0 ? sender : receiver;
+                doc.text(`${role} Information`, 15, y);
+                doc.line(15, y + 3, 195, y + 3);
+                y += 12;
+                [`Name: ${info.name}`, info.address && `Address: ${info.address}`, info.phone && `Phone: ${info.phone}`, info.email && `Email: ${info.email}`]
+                    .filter(Boolean)
+                    .forEach(line => {
+                        doc.splitTextToSize(line, 180).forEach(l => {
+                            doc.text(l, 15, y);
+                            y += 7;
+                        });
+                    });
+                y += 10;
+            });
+
+            doc.setFontSize(9);
+            doc.setTextColor(120, 120, 120);
+            doc.text('Generated by XDC Proof • https://s4njk4n.github.io/XDC_Proof/', 105, 285, { align: 'center' });
+
+            return doc.output('blob');
+        }
+
+        async function generateReceipt() {
+            const txHash = document.getElementById('txHash').value.trim();
+            const description = document.getElementById('description').value.trim();
+            const errorMessage = document.getElementById('errorMessage');
+            errorMessage.classList.add('hidden');
+
+            if (!txHash.match(/^0x[a-fA-F0-9]{64}$/)) {
+                errorMessage.textContent = 'Invalid transaction hash.';
+                errorMessage.classList.remove('hidden');
+                return;
+            }
+            if (!description) {
+                errorMessage.textContent = 'Payment purpose is required.';
+                errorMessage.classList.remove('hidden');
+                return;
+            }
+
+            try {
+                const tx = await fetchTx(txHash);
+                await autoFillFromTx(tx);
+                const doc = await generateSinglePDF(tx, description);
+                doc.save(`XDC_Proof_${tx.hash.slice(0, 10)}.pdf`);
+            } catch (error) {
+                errorMessage.textContent = error.message.includes('not found')
+                    ? 'Transaction not found. Check XDCScan.'
+                    : 'Network error. Try again.';
+                errorMessage.classList.remove('hidden');
+            }
+        }
+
+        async function autoFillFromTx(tx) {
+            const senderAddr = tx.from.toLowerCase();
+            const receiverAddr = tx.to ? tx.to.toLowerCase() : null;
+
+            const fillField = (id, value) => {
+                const el = document.getElementById(id);
+                if (el && !el.value && value) el.value = value;
+            };
+
+            if (entities[senderAddr]) {
+                const s = entities[senderAddr];
+                fillField('senderName', s.name || s.company);
+                fillField('senderAddress', s.address_line);
+                fillField('senderPhone', s.phone);
+                fillField('senderEmail', s.email);
+                fillField('senderLogo', s.logo_url);
+            }
+
+            if (receiverAddr && entities[receiverAddr]) {
+                const r = entities[receiverAddr];
+                fillField('receiverName', r.name || r.company);
+                fillField('receiverAddress', r.address_line);
+                fillField('receiverPhone', r.phone);
+                fillField('receiverEmail', r.email);
+            }
+        }
+
+        // === Animations ===
+        const particlesContainer = document.getElementById('particles');
+        function initParticles() {
+            for (let i = 0; i < 30; i++) {
+                const p = document.createElement('div');
+                p.className = 'particle';
+                p.style.left = `${Math.random() * 100}%`;
+                p.style.top = `${Math.random() * 100}%`;
+                p.style.animation = `float ${5 + Math.random() * 3}s infinite`;
+                particlesContainer.appendChild(p);
+            }
+        }
+        initParticles();
+
+        function randomizeClouds() {
+            const bg = document.querySelector('#background');
+            const rand = () => 20 + Math.random() * 60;
+            bg.style.setProperty('--cloud1-left', `${rand()}%`);
+            bg.style.setProperty('--cloud2-left', `${rand()}%`);
+            bg.style.setProperty('--cloud1-top', `${rand()}%`);
+            bg.style.setProperty('--cloud2-top', `${rand()}%`);
+        }
+        randomizeClouds();
+        setInterval(randomizeClouds, 10000);
+
+        window.onload = () => {
+            loadSavedCsv();
+            initParticles();
+            randomizeClouds();
+            setInterval(randomizeClouds, 10000);
+        };
+    </script>
+</body>
+</html>
