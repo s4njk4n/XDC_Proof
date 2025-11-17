@@ -474,7 +474,7 @@
         }
 
         async function fetchTx(hash) {
-            const response = await fetch('https://rpc.xinfin.network', {
+            const response = await fetch('https://rpc.ankr.com/xdc', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ jsonrpc: '2.0', method: 'eth_getTransactionByHash', params: [hash], id: 1 })
