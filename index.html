@@ -31,6 +31,7 @@
             --btn-text: #A3E4FF;
             --success: #6EE7B7;
             --error: #FCA5A5;
+            --nav-bg: rgba(46, 42, 106, 0.7);
         }
         [data-theme="dark"] {
             --bg-gradient: linear-gradient(180deg, #0f0f23 0%, #1a1a2e 100%);
@@ -42,6 +43,7 @@
             --input-bg: #1a1a2e;
             --btn-bg: #1a1a2e;
             --btn-text: #a0a0ff;
+            --nav-bg: rgba(26, 26, 46, 0.7);
         }
         body {
             font-family: 'Poppins', sans-serif;
@@ -56,7 +58,7 @@
             border: 1px solid var(--border);
             backdrop-filter: blur(6px);
             border-radius: 20px;
-            padding: 1.5rem;
+            padding: 1.25rem;
         }
         input, textarea {
             background: var(--input-bg);
@@ -86,6 +88,40 @@
             margin-top: 1rem;
             font-size: 0.75rem;
         }
+        #hero {
+            position: relative;
+        }
+        #background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+        .particle {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: var(--text-muted);
+            border-radius: 50%;
+            opacity: 0.2;
+            pointer-events: none;
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        .hover-effect:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(163, 228, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+        .optional-text {
+            font-size: 0.875rem; /* text-sm */
+            color: var(--text-muted);
+        }
     </style>
 </head>
 <body>
@@ -97,7 +133,7 @@
     </div>
 
     <!-- Navigation -->
-    <nav class="py-6 px-6 sticky top-0 z-40 bg-opacity-70 backdrop-blur-md" style="background: rgba(46, 42, 106, 0.7);">
+    <nav class="py-6 px-6 sticky top-0 z-40 bg-opacity-70 backdrop-blur-md" style="background: var(--nav-bg);">
         <div class="max-w-7xl mx-auto flex justify-between items-center">
             <h1 class="text-3xl font-bold text-[#F3E8FF] max-sm:text-xl">XDC Proof</h1>
             <div class="nav-items space-x-8 max-sm:space-x-4">
@@ -114,41 +150,44 @@
             <div id="particles"></div>
         </div>
         <div class="max-w-5xl mx-auto p-6">
-            <h1 class="text-5xl md:text-5xl font-semibold text-[#F3E8FF] mb-4 max-sm:text-3xl tracking-tight">XDC Proof</h1>
             <p class="text-xl md:text-2xl text-[#E2D1F9] mb-12 max-sm:text-base">Generate verifiable, professional PDF receipts for XDC Network payments. Trusted for trade finance, accounting, and transparency.</p>
 
             <!-- 1. SINGLE RECEIPT -->
             <div class="card hover-effect max-w-lg mx-auto mb-8 p-6">
                 <h2 class="text-2xl font-bold text-[#A3E4FF] mb-4">Generate Single Receipt</h2>
-                <input type="text" id="txHash" placeholder="XDC Transaction Hash (e.g., 0x...)" class="w-full p-3 mb-4 rounded-lg bg-[#2E2A6A] text-[#F3E8FF] border border-[#A3E4FF]/30 focus:outline-none max-sm:text-sm">
-                <textarea id="description" placeholder="Payment Purpose (e.g., Invoice #123: 500 Widgets)" class="w-full p-3 mb-6 rounded-lg bg-[#2E2A6A] text-[#F3E8FF] border border-[#A3E4FF]/30 focus:outline-none max-sm:text-sm" rows="3"></textarea>
+                <input type="text" id="txHash" placeholder="XDC Transaction Hash (e.g., 0x...)" class="w-full p-3 mb-4 rounded-lg bg-[#2E2A6A] text-[#F3E8FF] border border-[#A3E4FF]/30 focus:outline-none max-sm:text-sm" aria-label="Transaction Hash">
+                <textarea id="description" placeholder="Payment Purpose (e.g., Invoice #123: 500 Widgets)" class="w-full p-3 mb-6 rounded-lg bg-[#2E2A6A] text-[#F3E8FF] border border-[#A3E4FF]/30 focus:outline-none max-sm:text-sm" rows="3" aria-label="Payment Description"></textarea>
 
-                <div class="grid md:grid-cols-2 gap-6 mb-6">
-                    <div>
-                        <h3 class="text-lg text-[#A3E4FF] mb-2">Sender Details (Optional)</h3>
-                        <input type="text" id="senderName" placeholder="Sender Name" class="w-full p-3 mb-3 rounded-lg bg-[#2E2A6A] text-[#F3E8FF] border border-[#A3E4FF]/30 focus:outline-none max-sm:text-sm">
-                        <input type="text" id="senderAddress" placeholder="Sender Address" class="w-full p-3 mb-3 rounded-lg bg-[#2E2A6A] text-[#F3E8FF] border border-[#A3E4FF]/30 focus:outline-none max-sm:text-sm">
-                        <input type="text" id="senderPhone" placeholder="Sender Phone" class="w-full p-3 mb-3 rounded-lg bg-[#2E2A6A] text-[#F3E8FF] border border-[#A3E4FF]/30 focus:outline-none max-sm:text-sm">
-                        <input type="text" id="senderEmail" placeholder="Sender Email" class="w-full p-3 mb-3 rounded-lg bg-[#2E2A6A] text-[#F3E8FF] border border-[#A3E4FF]/30 focus:outline-none max-sm:text-sm">
-                        <input type="text" id="senderLogo" placeholder="Sender Logo .png URL" class="w-full p-3 mb-3 rounded-lg bg-[#2E2A6A] text-[#F3E8FF] border border-[#A3E4FF]/30 focus:outline-none max-sm:text-sm">
+                <div class="grid md:grid-cols-2 gap-6 mb-6 items-stretch">
+                    <div class="flex flex-col h-full justify-between">
+                        <h3 class="text-lg text-[#A3E4FF] mb-2 whitespace-nowrap">Seller Details<span class="optional-text"> (Optional)</span></h3>
+                        <input type="text" id="sellerName" placeholder="Seller Name" class="w-full p-3 mb-3 rounded-lg bg-[#2E2A6A] text-[#F3E8FF] border border-[#A3E4FF]/30 focus:outline-none max-sm:text-sm" aria-label="Seller Name">
+                        <input type="text" id="sellerAddress" placeholder="Seller Address" class="w-full p-3 mb-3 rounded-lg bg-[#2E2A6A] text-[#F3E8FF] border border-[#A3E4FF]/30 focus:outline-none max-sm:text-sm" aria-label="Seller Address">
+                        <input type="text" id="sellerPhone" placeholder="Seller Phone (e.g., +1-555-123-4567)" pattern="[+0-9\- ]*" class="w-full p-3 mb-3 rounded-lg bg-[#2E2A6A] text-[#F3E8FF] border border-[#A3E4FF]/30 focus:outline-none max-sm:text-sm" aria-label="Seller Phone">
+                        <input type="email" id="sellerEmail" placeholder="Seller Email (e.g., seller@example.com)" class="w-full p-3 mb-3 rounded-lg bg-[#2E2A6A] text-[#F3E8FF] border border-[#A3E4FF]/30 focus:outline-none max-sm:text-sm" aria-label="Seller Email">
                     </div>
-                    <div>
-                        <h3 class="text-lg text-[#A3E4FF] mb-2">Receiver Details (Optional)</h3>
-                        <input type="text" id="receiverName" placeholder="Receiver Name" class="w-full p-3 mb-3 rounded-lg bg-[#2E2A6A] text-[#F3E8FF] border border-[#A3E4FF]/30 focus:outline-none max-sm:text-sm">
-                        <input type="text" id="receiverAddress" placeholder="Receiver Address" class="w-full p-3 mb-3 rounded-lg bg-[#2E2A6A] text-[#F3E8FF] border border-[#A3E4FF]/30 focus:outline-none max-sm:text-sm">
-                        <input type="text" id="receiverPhone" placeholder="Receiver Phone" class="w-full p-3 mb-3 rounded-lg bg-[#2E2A6A] text-[#F3E8FF] border border-[#A3E4FF]/30 focus:outline-none max-sm:text-sm">
-                        <input type="text" id="receiverEmail" placeholder="Receiver Email" class="w-full p-3 mb-3 rounded-lg bg-[#2E2A6A] text-[#F3E8FF] border border-[#A3E4FF]/30 focus:outline-none max-sm:text-sm">
+                    <div class="flex flex-col h-full justify-between">
+                        <h3 class="text-lg text-[#A3E4FF] mb-2 whitespace-nowrap">Purchaser Details<span class="optional-text"> (Optional)</span></h3>
+                        <input type="text" id="purchaserName" placeholder="Purchaser Name" class="w-full p-3 mb-3 rounded-lg bg-[#2E2A6A] text-[#F3E8FF] border border-[#A3E4FF]/30 focus:outline-none max-sm:text-sm" aria-label="Purchaser Name">
+                        <input type="text" id="purchaserAddress" placeholder="Purchaser Address" class="w-full p-3 mb-3 rounded-lg bg-[#2E2A6A] text-[#F3E8FF] border border-[#A3E4FF]/30 focus:outline-none max-sm:text-sm" aria-label="Purchaser Address">
+                        <input type="text" id="purchaserPhone" placeholder="Purchaser Phone (e.g., +1-555-123-4567)" pattern="[+0-9\- ]*" class="w-full p-3 mb-3 rounded-lg bg-[#2E2A6A] text-[#F3E8FF] border border-[#A3E4FF]/30 focus:outline-none max-sm:text-sm" aria-label="Purchaser Phone">
+                        <input type="email" id="purchaserEmail" placeholder="Purchaser Email (e.g., purchaser@example.com)" class="w-full p-3 mb-3 rounded-lg bg-[#2E2A6A] text-[#F3E8FF] border border-[#A3E4FF]/30 focus:outline-none max-sm:text-sm" aria-label="Purchaser Email">
                     </div>
                 </div>
 
+                <input type="text" id="sellerLogo" placeholder="Seller Logo URL (optional .png/.jpg)" class="w-full p-3 mb-4 rounded-lg bg-[#2E2A6A] text-[#F3E8FF] border border-[#A3E4FF]/30 focus:outline-none max-sm:text-sm" aria-label="Seller Logo URL">
+
+                <input type="text" id="rpcUrl" placeholder="Custom RPC Endpoint (optional)" value="https://rpc.ankr.com/xdc" class="w-full p-3 mb-1 rounded-lg bg-[#2E2A6A] text-[#F3E8FF] border border-[#A3E4FF]/30 focus:outline-none max-sm:text-sm" aria-label="Custom RPC URL">
+                <p class="text-xs text-[#D4C2F0] mb-4">Default: https://rpc.ankr.com/xdc - change for testnet or faster node</p>
+
                 <p id="errorMessage" class="text-[#FCA5A5] text-sm mt-2 hidden">Invalid input.</p>
-                <button onclick="generateReceipt()" class="w-full bg-gradient-to-r from-[#A3E4FF] to-[#FFD1DC] text-[#2E2A6A] font-semibold py-3 px-6 rounded-full hover-effect max-sm:py-2 max-sm:text-sm">Generate Proof</button>
+                <button id="generateSingleBtn" onclick="generateReceipt()" class="w-full bg-gradient-to-r from-[#A3E4FF] to-[#FFD1DC] text-[#2E2A6A] font-semibold py-3 px-6 rounded-full hover-effect max-sm:py-2 max-sm:text-sm">Generate Proof</button>
             </div>
 
             <!-- 2. BULK ENTITY MAPPING -->
             <div class="card hover-effect max-w-lg mx-auto mb-8 p-6">
                 <div class="flex items-center justify-between mb-3">
-                    <h2 class="text-xl font-semibold text-[#A3E4FF]">Bulk Entity Mapping (Optional)</h2>
+                    <h2 class="text-xl font-semibold text-[#A3E4FF]">Bulk Entity Mapping<span class="optional-text"> (Optional)</span></h2>
                     <button onclick="openCsvHelp()" class="text-xs bg-[#A3E4FF]/20 hover:bg-[#A3E4FF]/30 text-[#A3E4FF] rounded-full w-6 h-6 flex items-center justify-center">?</button>
                 </div>
                 <p class="text-sm text-[#D4C2F0] mb-4">Auto-fill company details for known addresses.</p>
@@ -171,7 +210,7 @@
             <!-- 3. BATCH GENERATE -->
             <div class="card hover-effect max-w-lg mx-auto p-6">
                 <div class="flex items-center justify-between mb-3">
-                    <h2 class="text-xl font-semibold text-[#A3E4FF]">Batch Generate (CSV)</h2>
+                    <h2 class="text-xl font-semibold text-[#A3E4FF]">Batch Generate<span class="optional-text"> (CSV)</span></h2>
                     <button onclick="openBatchHelp()" class="text-xs bg-[#A3E4FF]/20 hover:bg-[#A3E4FF]/30 text-[#A3E4FF] rounded-full w-6 h-6 flex items-center justify-center">?</button>
                 </div>
                 <p class="text-sm text-[#D4C2F0] mb-4">Generate 100+ receipts at once from a CSV.</p>
@@ -197,36 +236,38 @@
         </div>
     </section>
 
-    <!-- Contact Section -->
-    <section id="contact" class="py-20 px-6">
-        <div class="max-w-5xl mx-auto text-center">
-            <h2 class="text-4xl md:text-5xl font-bold text-[#A3E4FF] mb-12 max-sm:text-2xl">Connect</h2>
-            <p class="text-[#E2D1F9] mb-8 text-lg max-sm:text-sm">Need help with XDC Proof or custom integrations? Reach out:</p>
-            <div class="social-links flex justify-center flex-wrap gap-8 max-sm:gap-4">
-                <a href="https://t.me/s4njk4n" target="_blank" class="social-icon text-3xl max-sm:text-xl" aria-label="Telegram">
-                    <i class="fa-brands fa-telegram"></i> <span class="text-lg max-sm:text-sm ml-2">Telegram: @s4njk4n</span>
-                </a>
-                <a href="https://discord.com/users/852434672793288724" target="_blank" class="social-icon text-3xl max-sm:text-xl" aria-label="Discord">
-                    <i class="fa-brands fa-discord"></i> <span class="text-lg max-sm:text-sm ml-2">Discord: @s4njk4n</span>
-                </a>
-                <a href="https://x.com/s4njk4n" target="_blank" class="social-icon text-3xl max-sm:text-xl" aria-label="X">
-                    <i class="fa-brands fa-x-twitter"></i> <span class="text-lg max-sm:text-sm ml-2">X: @s4njk4n</span>
-                </a>
-                <a href="https://github.com/s4njk4n" target="_blank" class="social-icon text-3xl max-sm:text-xl" aria-label="GitHub">
-                    <i class="fa-brands fa-github"></i> <span class="text-lg max-sm:text-sm ml-2">GitHub: s4njk4n</span>
-                </a>
-            </div>
-        </div>
-    </section>
+  <!-- Contact Section -->
+  <section id="contact" class="pt-20 pb-4 px-6">
+    <div class="max-w-5xl mx-auto text-center">
+      <h2 class="text-4xl md:text-5xl font-bold text-[#A3E4FF] mb-12 max-sm:text-2xl">Connect</h2>
+      <p class="text-[#E2D1F9] mb-8 text-lg max-sm:text-sm">Have questions or need support for XDC Sentinel or other services? Reach out to me on your preferred platform:</p>
+      <div class="social-links flex justify-center flex-wrap gap-8 max-sm:gap-4">
+        <a href="https://t.me/s4njk4n" target="_blank" class="social-icon text-3xl max-sm:text-xl" aria-label="Contact us on Telegram" title="Contact us on Telegram (@s4njk4n)">
+          <i class="fa-brands fa-telegram"></i> <span class="text-lg max-sm:text-sm ml-2">Telegram: @s4njk4n</span>
+        </a>
+        <a href="https://discord.com/users/852434672793288724" target="_blank" class="social-icon text-3xl max-sm:text-xl" aria-label="Contact us on Discord" title="Contact us on Discord (@s4njk4n)">
+          <i class="fa-brands fa-discord"></i> <span class="text-lg max-sm:text-sm ml-2">Discord: @s4njk4n</span>
+        </a>
+        <a href="https://x.com/s4njk4n" target="_blank" class="social-icon text-3xl max-sm:text-xl" aria-label="Visit our X profile" title="Visit our X profile (@s4njk4n)">
+          <i class="fa-brands fa-x-twitter"></i> <span class="text-lg max-sm:text-sm ml-2">X: @s4njk4n</span>
+        </a>
+        <a href="https://github.com/s4njk4n" target="_blank" class="social-icon text-3xl max-sm:text-xl" aria-label="Visit our GitHub profile" title="Visit our GitHub profile (s4njk4n)">
+          <i class="fa-brands fa-github"></i> <span class="text-lg max-sm:text-sm ml-2">GitHub: s4njk4n</span>
+        </a>
+      </div>
+    </div>
+  </section>
 
-    <!-- Footer -->
-    <footer class="py-10 px-6 text-center text-[#D4C2F0]">
-        <p class="max-sm:text-sm">
-            2025 XDC Outpost. 
-            <a href="https://github.com/s4njk4n/XDC_Proof/blob/main/LICENSE" target="_blank" class="text-[#A3E4FF] hover:underline">MIT License</a>. 
-            Powered by <a href="https://github.com/s4njk4n" target="_blank" class="text-[#A3E4FF] hover:underline">s4njk4n</a>.
-        </p>
-    </footer>
+<!-- Footer -->
+<footer class="py-10 px-6 text-center text-[#D4C2F0]">
+  <p class="max-sm:text-sm">© 2025 XDC Outpost. All rights reserved. Powered by <a href="https://github.com/s4njk4n?tab=repositories" target="_blank" class="text-[#A3E4FF] hover:underline">s4njk4n</a>.</p>
+  <p class="mt-2">
+    
+        <a href="https://www.hitwebcounter.com/" target="_blank">
+      <img src="https://hitwebcounter.com/counter/counter.php?page=21458660&style=0038&nbdigits=5&type=page&initCount=0" title="Free Tools" alt="Free Tools" border="0" style="display: block; margin: 0 auto;" />
+    </a>
+  </p>    
+</footer>
 
     <!-- Modals -->
     <div id="csvHelpModal" class="fixed inset-0 bg-black/70 flex items-center justify-center z-50 hidden px-4" onclick="closeCsvHelp()">
@@ -243,7 +284,7 @@
 "xdc9f8e7d6c5b4a3...","Global Trade","Global Trade Ltd","456 Port Ave, Singapore","555-2000","global@trade.com","https://i.imgur.com/global.png"</pre>
                 <p class="mt-3"><strong>Important:</strong> Wrap <strong>every field in quotes</strong> to handle commas.</p>
                 <p><strong>2. Upload or paste it once</strong> — it’s saved in your browser.</p>
-                <p><strong>3. Paste any XDC transaction hash</strong> → XDC Proof auto-fills sender/receiver.</p>
+                <p><strong>3. Paste any XDC transaction hash</strong> → XDC Proof auto-fills purchaser/seller.</p>
             </div>
         </div>
     </div>
@@ -351,8 +392,8 @@
             const headers = parseCsvLine(lines[0]).map(h => h.toLowerCase());
             for (let i = 1; i < lines.length; i++) {
                 const values = parseCsvLine(lines[i]);
-                if (values.length < 2) continue;
-                const addr = values[0].trim().toLowerCase();
+                if (values.length !== headers.length) continue; // Skip invalid lines
+                const addr = values[0].trim().toLowerCase().replace(/^xdc/, '0x');
                 const entry = {};
                 headers.forEach((h, idx) => { if (h !== 'address') entry[h] = values[idx]?.trim() || ''; });
                 entities[addr] = entry;
@@ -415,9 +456,9 @@
             }
             batchTxs = lines.slice(1).map(line => {
                 const [hash, desc] = parseCsvLine(line);
-                return { hash: hash.trim(), description: desc.trim() };
-            }).filter(t => t.hash && t.description);
-            document.getElementById('batchStatus').innerHTML = `<span class="success">Loaded ${batchTxs.length} transactions. Ready.</span>`;
+                return { hash: hash?.trim() || '', description: desc?.trim() || '' };
+            }).filter(t => t.hash && t.description && t.hash.match(/^0x[a-fA-F0-9]{64}$/));
+            document.getElementById('batchStatus').innerHTML = `<span class="success">Loaded ${batchTxs.length} valid transactions. Ready.</span>`;
             document.getElementById('generateBatchBtn').classList.remove('hidden');
         });
 
@@ -446,6 +487,8 @@
                 const { hash, description } = batchTxs[i];
                 try {
                     const tx = await fetchTx(hash);
+                    const fields = ['sellerName', 'sellerAddress', 'sellerPhone', 'sellerEmail', 'purchaserName', 'purchaserAddress', 'purchaserPhone', 'purchaserEmail', 'sellerLogo'];
+                    fields.forEach(id => document.getElementById(id).value = '');
                     await autoFillFromTx(tx);
                     const pdfDoc = await generateSinglePDF(tx, description);
                     const pdfBlob = pdfDoc.output('blob');
@@ -475,7 +518,9 @@
         }
 
         async function fetchTx(hash) {
-            const txResponse = await fetch('https://rpc.ankr.com/xdc', {
+            const rpcUrlInput = document.getElementById('rpcUrl').value.trim();
+            const rpcUrl = (rpcUrlInput && rpcUrlInput.match(/^https?:\/\/.+/)) ? rpcUrlInput : 'https://rpc.ankr.com/xdc';
+            const txResponse = await fetch(rpcUrl, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ jsonrpc: '2.0', method: 'eth_getTransactionByHash', params: [hash], id: 1 })
@@ -486,7 +531,7 @@
             const tx = txData.result;
 
             if (tx.blockNumber) {
-                const blockResponse = await fetch('https://rpc.ankr.com/xdc', {
+                const blockResponse = await fetch(rpcUrl, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ jsonrpc: '2.0', method: 'eth_getBlockByNumber', params: [tx.blockNumber, false], id: 1 })
@@ -501,39 +546,22 @@
         }
 
         async function generateSinglePDF(tx, description) {
-            const valueXDC = (parseInt(tx.value || '0x0', 16) / 1e18).toFixed(6);
-            const senderAddr = tx.from.toLowerCase().replace(/^0x/, 'xdc');
-            const receiverAddr = tx.to ? tx.to.toLowerCase().replace(/^0x/, 'xdc') : 'Contract Creation';
-
-            const sender = {
-                name: document.getElementById('senderName').value || 'Unknown Sender',
-                address: document.getElementById('senderAddress').value || '',
-                phone: document.getElementById('senderPhone').value || '',
-                email: document.getElementById('senderEmail').value || '',
-                logo_url: document.getElementById('senderLogo').value || ''
-            };
-            const receiver = {
-                name: document.getElementById('receiverName').value || 'Unknown Receiver',
-                address: document.getElementById('receiverAddress').value || '',
-                phone: document.getElementById('receiverPhone').value || '',
-                email: document.getElementById('receiverEmail').value || ''
-            };
-
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
             doc.setFont('helvetica', 'bold');
             doc.setFontSize(18);
             doc.setTextColor(44, 62, 80);
-            doc.text('XDC Payment Proof', 105, 25, { align: 'center' });
+            doc.text('Payment Receipt', 105, 25, { align: 'center' });
+
             doc.setFont('helvetica', 'normal');
 
             let y = 50;
-            if (sender.logo_url) {
+            if (document.getElementById('sellerLogo').value) {
                 try {
                     const img = new Image();
                     img.crossOrigin = 'Anonymous';
-                    img.src = sender.logo_url + '?t=' + Date.now();
-                    const format = sender.logo_url.toLowerCase().endsWith('.jpg') || sender.logo_url.toLowerCase().endsWith('.jpeg') ? 'JPEG' : 'PNG';
+                    img.src = document.getElementById('sellerLogo').value + '?t=' + Date.now();
+                    const format = document.getElementById('sellerLogo').value.toLowerCase().endsWith('.jpg') || document.getElementById('sellerLogo').value.toLowerCase().endsWith('.jpeg') ? 'JPEG' : 'PNG';
                     await new Promise(resolve => {
                         img.onload = () => { doc.addImage(img, format, 15, 10, 30, 30); resolve(); };
                         img.onerror = () => { resolve(); };
@@ -548,52 +576,36 @@
             doc.addImage(qrDataUrl, 'PNG', 165, 10, 30, 30);
             doc.setFontSize(8);
             doc.setTextColor(100, 100, 100);
-            doc.text('Scan to Verify', 180, 45, { align: 'center' });  // Adjusted x to 180 for proper centering
+            doc.text('Scan to Verify Payment', 180, 45, { align: 'center' });
 
             doc.setFontSize(12);
+
+            // Date Section
             doc.setFont('helvetica', 'bold');
-            doc.text('Transaction Details', 15, y);
+            doc.text('Date', 15, y);
             doc.setFont('helvetica', 'normal');
             doc.line(15, y + 3, 195, y + 3);
             y += 12;
-            ['Hash', 'From', 'To', 'Amount', 'Date'].forEach((label, i) => {
-                let value;
-                if (i === 0) {
-                    value = tx.hash;
-                } else if (i === 1) {
-                    value = `${sender.name} (${senderAddr})`;
-                } else if (i === 2) {
-                    value = `${receiver.name} (${receiverAddr})`;
-                } else if (i === 3) {
-                    value = `${valueXDC} XDC`;
-                } else {
-                    // Use transaction timestamp if available, else fallback to current
-                    const timestamp = tx.timestamp ? parseInt(tx.timestamp, 16) * 1000 : Date.now();
-                    value = new Date(timestamp).toUTCString();
-                }
-                const labelWidth = doc.getTextWidth(label + ': ');
-                doc.setFont('helvetica', 'bold');
-                doc.text(label + ': ', 15, y);
-                doc.setFont('helvetica', 'normal');
-                const lines = doc.splitTextToSize(value, 180 - labelWidth);
-                doc.text(lines, 15 + labelWidth, y);
-                y += lines.length * 7;
-            });
-
+            const timestamp = tx.timestamp ? parseInt(tx.timestamp, 16) * 1000 : Date.now();
+            const dateValue = new Date(timestamp).toUTCString();
+            const dateLines = doc.splitTextToSize(dateValue, 180);
+            doc.text(dateLines, 15, y);
+            y += dateLines.length * 7;
             y += 10;
-            doc.setFont('helvetica', 'bold');
-            doc.text('Payment Purpose', 15, y);
-            doc.setFont('helvetica', 'normal');
-            doc.line(15, y + 3, 195, y + 3);
-            y += 12;
-            doc.splitTextToSize(description, 180).forEach(line => {
-                doc.text(line, 15, y);
-                y += 7;
-            });
-            y += 15;
 
-            ['Sender', 'Receiver'].forEach((role, i) => {
-                const info = i === 0 ? sender : receiver;
+            // Seller and Purchaser Information
+            ['Seller', 'Purchaser'].forEach((role, i) => {
+                const info = i === 0 ? {
+                    name: document.getElementById('sellerName').value || 'Unknown Seller',
+                    address: document.getElementById('sellerAddress').value || '',
+                    phone: document.getElementById('sellerPhone').value || '',
+                    email: document.getElementById('sellerEmail').value || ''
+                } : {
+                    name: document.getElementById('purchaserName').value || 'Unknown Purchaser',
+                    address: document.getElementById('purchaserAddress').value || '',
+                    phone: document.getElementById('purchaserPhone').value || '',
+                    email: document.getElementById('purchaserEmail').value || ''
+                };
                 doc.setFont('helvetica', 'bold');
                 doc.text(`${role} Information`, 15, y);
                 doc.setFont('helvetica', 'normal');
@@ -606,9 +618,9 @@
                                            field === 'Address' ? info.address :
                                            field === 'Phone' ? info.phone :
                                            info.email;
-                        const labelWidth = doc.getTextWidth(field + ': ');
+                        const labelWidth = doc.getTextWidth(field + ':  ');
                         doc.setFont('helvetica', 'bold');
-                        doc.text(field + ': ', 15, y);
+                        doc.text(field + ':  ', 15, y);
                         doc.setFont('helvetica', 'normal');
                         const lines = doc.splitTextToSize(fieldValue, 180 - labelWidth);
                         doc.text(lines, 15 + labelWidth, y);
@@ -617,9 +629,50 @@
                 y += 10;
             });
 
+            // Transaction Details
+            doc.setFont('helvetica', 'bold');
+            doc.text('Transaction Details', 15, y);
+            doc.setFont('helvetica', 'normal');
+            doc.line(15, y + 3, 195, y + 3);
+            y += 12;
+            const txLabels = ['Hash', 'Payer', 'Payee', 'Amount'];
+            txLabels.forEach((label, i) => {
+                let value;
+                if (i === 0) {
+                    value = tx.hash;
+                } else if (i === 1) {
+                    value = `${document.getElementById('purchaserName').value || 'Unknown Purchaser'} (${tx.from.toLowerCase().replace(/^0x/, 'xdc')})`;
+                } else if (i === 2) {
+                    value = `${document.getElementById('sellerName').value || 'Unknown Seller'} (${tx.to ? tx.to.toLowerCase().replace(/^0x/, 'xdc') : 'Contract Creation'})`;
+                } else if (i === 3) {
+                    let amount = parseInt(tx.value || '0x0', 16) / 1e18;
+                    let valueXDC = amount.toFixed(6).replace(/0+$/, '').replace(/\.$/, '');
+                    value = `${valueXDC} XDC`;
+                }
+                const labelWidth = doc.getTextWidth(label + ':  ');
+                doc.setFont('helvetica', 'bold');
+                doc.text(label + ':  ', 15, y);
+                doc.setFont('helvetica', 'normal');
+                const lines = doc.splitTextToSize(value, 180 - labelWidth);
+                doc.text(lines, 15 + labelWidth, y);
+                y += lines.length * 7;
+            });
+
+            // Payment Purpose
+            y += 10;
+            doc.setFont('helvetica', 'bold');
+            doc.text('Payment Purpose', 15, y);
+            doc.setFont('helvetica', 'normal');
+            doc.line(15, y + 3, 195, y + 3);
+            y += 12;
+            doc.splitTextToSize(description, 180).forEach(line => {
+                doc.text(line, 15, y);
+                y += 7;
+            });
+
             doc.setFontSize(9);
             doc.setTextColor(120, 120, 120);
-            doc.text('Generated by XDC Proof • https://s4njk4n.github.io/XDC_Proof/', 105, 285, { align: 'center' });
+            doc.text('Generated with XDC Proof • https://s4njk4n.github.io/XDC_Proof/', 105, 285, { align: 'center' });
 
             return doc;
         }
@@ -628,6 +681,7 @@
             const txHash = document.getElementById('txHash').value.trim();
             const description = document.getElementById('description').value.trim();
             const errorMessage = document.getElementById('errorMessage');
+            const generateBtn = document.getElementById('generateSingleBtn');
             errorMessage.classList.add('hidden');
 
             if (!txHash.match(/^0x[a-fA-F0-9]{64}$/)) {
@@ -640,7 +694,22 @@
                 errorMessage.classList.remove('hidden');
                 return;
             }
+            // Basic email/phone validation
+            const emails = [document.getElementById('purchaserEmail').value, document.getElementById('sellerEmail').value];
+            const phones = [document.getElementById('purchaserPhone').value, document.getElementById('sellerPhone').value];
+            if (emails.some(e => e && !e.match(/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/))) {
+                errorMessage.textContent = 'Invalid email format.';
+                errorMessage.classList.remove('hidden');
+                return;
+            }
+            if (phones.some(p => p && !p.match(/^[+0-9\- ]+$/))) {
+                errorMessage.textContent = 'Invalid phone format.';
+                errorMessage.classList.remove('hidden');
+                return;
+            }
 
+            generateBtn.textContent = 'Generating...';
+            generateBtn.disabled = true;
             try {
                 const tx = await fetchTx(txHash);
                 await autoFillFromTx(tx);
@@ -651,33 +720,36 @@
                     ? 'Transaction not found. Check XDCScan.'
                     : 'Network error. Try again.';
                 errorMessage.classList.remove('hidden');
+            } finally {
+                generateBtn.textContent = 'Generate Proof';
+                generateBtn.disabled = false;
             }
         }
 
         async function autoFillFromTx(tx) {
-            const senderAddr = tx.from.toLowerCase();
-            const receiverAddr = tx.to ? tx.to.toLowerCase() : null;
+            const purchaserAddr = tx.from.toLowerCase();
+            const sellerAddr = tx.to ? tx.to.toLowerCase() : null;
 
             const fillField = (id, value) => {
                 const el = document.getElementById(id);
                 if (el && !el.value && value) el.value = value;
             };
 
-            if (entities[senderAddr]) {
-                const s = entities[senderAddr];
-                fillField('senderName', s.name || s.company);
-                fillField('senderAddress', s.address_line);
-                fillField('senderPhone', s.phone);
-                fillField('senderEmail', s.email);
-                fillField('senderLogo', s.logo_url);
+            if (entities[purchaserAddr]) {
+                const p = entities[purchaserAddr];
+                fillField('purchaserName', p.name || p.company);
+                fillField('purchaserAddress', p.address_line);
+                fillField('purchaserPhone', p.phone);
+                fillField('purchaserEmail', p.email);
             }
 
-            if (receiverAddr && entities[receiverAddr]) {
-                const r = entities[receiverAddr];
-                fillField('receiverName', r.name || r.company);
-                fillField('receiverAddress', r.address_line);
-                fillField('receiverPhone', r.phone);
-                fillField('receiverEmail', r.email);
+            if (sellerAddr && entities[sellerAddr]) {
+                const s = entities[sellerAddr];
+                fillField('sellerName', s.name || s.company);
+                fillField('sellerAddress', s.address_line);
+                fillField('sellerPhone', s.phone);
+                fillField('sellerEmail', s.email);
+                fillField('sellerLogo', s.logo_url);
             }
         }
 
