@@ -58,7 +58,7 @@ CSV format: It's a table with headers. Make sure every value is in double quotes
 - `address_line`: Street address.
 - `phone`: Phone number.
 - `email`: Email.
-- `logo_url`: Link to a logo image (optional).
+- `logo_url`: Link to a logo image (optional). Recommended: 400×400 px or larger, square PNG with transparent background for best quality
 
 Easiest way: "Download" the sample csv from the link directly on the page, tweak it in a spreadsheet or text editor, and upload. No need to start from scratch.
 
