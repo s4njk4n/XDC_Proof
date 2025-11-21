@@ -31,7 +31,7 @@ This is the basic way to make one receipt at a time. Good for beginners just try
 5. (Optional) Change the RPC URL if you want a different node (the default is https://rpc.ankr.com/xdc, which works fine for mainnet).
 6. Hit "Generate Proof" and the page will locally create a PDF on your machine and prompt you to save it. The PDF has a QR code you can scan to check the transaction on XDCScan.
 
-Since it all happens locally, your info doesn't go anywhere except the RPC call to pull txhash details from the blockchain.
+Since it all happens locally, your info doesn't go anywhere (only an RPC call to pull the txhash details from the blockchain).
 
 ### What is Bulk Entity Mapping?
 This lets you link wallet addresses to real-world details, like company names or contacts. It's useful if you deal with the same addresses a lot—it auto-fills the seller/buyer fields when you enter a transaction hash. Everything is saved in your browser's local storage, so it's private and sticks around until you clear it.
