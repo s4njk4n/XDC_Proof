@@ -1,4 +1,4 @@
-_Live page in Beta is located at: https://s4njk4n.github.io/XDC_Proof/_
+_Live page is located at: https://s4njk4n.github.io/XDC_Proof/_
 
 # XDC Proof - Generate PDF Receipts for XDC Transactions
 
