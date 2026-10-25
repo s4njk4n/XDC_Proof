@@ -176,8 +176,8 @@
                 </div>
 
                 <input type="text" id="sellerLogo" placeholder="Seller Logo URL (optional .png/.jpg)" class="w-full p-3 mb-4 rounded-lg bg-[#2E2A6A] text-[#F3E8FF] border border-[#A3E4FF]/30 focus:outline-none max-sm:text-sm" aria-label="Seller Logo URL">
-                <input type="text" id="rpcUrl" placeholder="Custom RPC Endpoint (optional)" value="https://rpc.ankr.com/xdc" class="w-full p-3 mb-1 rounded-lg bg-[#2E2A6A] text-[#F3E8FF] border border-[#A3E4FF]/30 focus:outline-none max-sm:text-sm" aria-label="Custom RPC URL">
-                <p class="text-xs text-[#D4C2F0] mb-4">Default: https://rpc.ankr.com/xdc - change for testnet or faster node</p>
+                <input type="text" id="rpcUrl" placeholder="Custom RPC Endpoint (optional)" value="https://rpc.plugin.global/xdcmainnet" class="w-full p-3 mb-1 rounded-lg bg-[#2E2A6A] text-[#F3E8FF] border border-[#A3E4FF]/30 focus:outline-none max-sm:text-sm" aria-label="Custom RPC URL">
+                <p class="text-xs text-[#D4C2F0] mb-4">Default: https://rpc.plugin.global/xdcmainnet - change for testnet or faster node</p>
 
                 <p id="errorMessage" class="text-[#FCA5A5] text-sm mt-2 hidden">Invalid input.</p>
                 <button id="generateSingleBtn" onclick="generateReceipt()" class="w-full bg-gradient-to-r from-[#A3E4FF] to-[#FFD1DC] text-[#2E2A6A] font-semibold py-3 px-6 rounded-full hover-effect max-sm:py-2 max-sm:text-sm">Generate Proof</button>
@@ -518,7 +518,7 @@
 
         async function fetchTx(hash) {
             const rpcUrlInput = document.getElementById('rpcUrl').value.trim();
-            const rpcUrl = (rpcUrlInput && rpcUrlInput.match(/^https?:\/\/.+/)) ? rpcUrlInput : 'https://rpc.ankr.com/xdc';
+            const rpcUrl = (rpcUrlInput && rpcUrlInput.match(/^https?:\/\/.+/)) ? rpcUrlInput : 'https://rpc.plugin.global/xdcmainnet';
             const txResponse = await fetch(rpcUrl, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
