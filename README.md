@@ -28,7 +28,7 @@ This is the basic way to make one receipt at a time. Good for beginners just try
 2. Write a short description of what the payment was for, like "Payment for invoice #456".
 3. (Optional) Add details about the seller and buyer, such as names, addresses, phone numbers, or emails. If you have bulk mapping set up (see below), this might fill in automatically.
 4. (Optional) Put in a URL for the seller's logo (a .png or .jpg image).
-5. (Optional) Change the RPC URL if you want a different node (the default is https://rpc.ankr.com/xdc, which works fine for mainnet).
+5. (Optional) Change the RPC URL if you want a different node (the default is https://rpc.plugin.global/xdcmainnet, which works fine for mainnet).
 6. Hit "Generate Proof" and the page will locally create a PDF on your machine and prompt you to save it. The PDF has a QR code you can scan to check the transaction on XDCScan.
 
 Since it all happens locally, your info doesn't go anywhere (only an RPC call to pull the txhash details from the blockchain).
