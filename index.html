@@ -568,7 +568,7 @@
                 } catch (e) {}
             }
 
-            const scanUrl = `https://xdc.blocksscan.io/tx/${tx.hash}`;
+            const scanUrl = `https://xdcscan.com/tx/${tx.hash}`;
             const qrCanvas = document.createElement('canvas');
             await QRCode.toCanvas(qrCanvas, scanUrl, { width: 80, margin: 1 });
             const qrDataUrl = qrCanvas.toDataURL('image/png');
