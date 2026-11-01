@@ -1,4 +1,4 @@
-_Live page is located at: https://s4njk4n.github.io/XDC_Proof/_
+_Live page is located at: https://xdcoutpost.xyz/XDC_Proof/?utm_source=github_
 
 # XDC Proof - Generate PDF Receipts for XDC Transactions
 
@@ -8,13 +8,12 @@ This is a simple web app that lets you create PDF receipts from XDC Network tran
 
 It's handy if you need receipts for accounting, invoices, or just to show proof of payment. I built it for folks working with XDC, like in trade finance or basic bookkeeping.
 
-[Try it out here](https://s4njk4n.github.io/XDC_Proof/)
+[Try it out here](https://xdcoutpost.xyz/XDC_Proof/?utm_source=github)
 
 ## Features
 - Create a single receipt from a transaction hash.
 - Map wallet addresses to names and details for auto-filling (using a CSV).
 - Generate batches of receipts from a list in a CSV.
-- Dark mode switch for easier reading.
 - Option to use a custom RPC endpoint (defaults to a public one).
 - Basic checks to make sure inputs are valid.
 

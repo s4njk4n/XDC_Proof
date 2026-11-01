@@ -1,0 +1,1193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>XDC Proof: PDF payment receipts for XDC transactions | XDC Outpost</title>
+  <meta name="license" content="MIT">
+  <meta name="description" content="Turn any XDC Network payment into a verifiable PDF receipt with a QR code to XDCScan. Single or batch, with an address book for your customers and suppliers. Runs in your browser.">
+  <link rel="canonical" href="https://xdcoutpost.xyz/XDC_Proof/">
+  <meta name="theme-color" content="#1E1A4A">
+  <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://xdcoutpost.xyz/XDC_Proof/">
+  <meta property="og:title" content="XDC Proof: payment receipts for XDC">
+  <meta property="og:description" content="Turn any XDC payment into a verifiable PDF receipt, one at a time or in batches.">
+  <meta property="og:image" content="https://xdcoutpost.xyz/XDC_Proof/og.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:site" content="@s4njk4n">
+
+  <link rel="preload" href="/assets/fonts/bricolage.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/assets/fonts/instrument-sans.woff2" as="font" type="font/woff2" crossorigin>
+
+  <style>
+    @font-face {
+      font-family: "Bricolage";
+      src: url("/assets/fonts/bricolage.woff2") format("woff2-variations");
+      font-weight: 200 800; font-stretch: 75% 100%; font-display: swap;
+    }
+    @font-face {
+      font-family: "Instrument Sans";
+      src: url("/assets/fonts/instrument-sans.woff2") format("woff2-variations");
+      font-weight: 400 700; font-stretch: 75% 100%; font-display: swap;
+    }
+
+    /* ---- Shared XDC Outpost tokens ---- */
+    :root {
+      --night: #1E1A4A;
+      --deep: #19163F;
+      --dusk: #2B2566;
+      --line: #443D84;
+      --ink: #F2EDFF;
+      --mist: #C3B8EA;
+      --signal: #8FDCFF;
+      --flare: #FF9EBB;
+      --ok: #6EE7B7;
+      --display: "Bricolage", "Avenir Next", "Segoe UI", sans-serif;
+      --body: "Instrument Sans", "Helvetica Neue", "Segoe UI", sans-serif;
+      --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+      --wrap: 72rem;
+      --gutter: clamp(1.25rem, 4vw, 2.5rem);
+    }
+    *, *::before, *::after { box-sizing: border-box; }
+    html { scroll-behavior: smooth; scroll-padding-top: 5rem; }
+    @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+    body {
+      margin: 0; background: var(--night); color: var(--ink);
+      font-family: var(--body); font-size: 1.0625rem; line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+    a { color: var(--signal); text-underline-offset: 0.2em; }
+    a:hover { color: var(--ink); }
+    :focus-visible { outline: 2px solid var(--signal); outline-offset: 3px; border-radius: 4px; }
+    [hidden] { display: none !important; }
+    .wrap { max-width: var(--wrap); margin: 0 auto; padding: 0 var(--gutter); }
+    .nb { white-space: nowrap; }
+    .skip { position: absolute; left: 1rem; top: -3rem; background: var(--signal); color: var(--night); padding: 0.5rem 1rem; border-radius: 6px; font-weight: 600; z-index: 20; }
+    .skip:focus { top: 1rem; }
+
+    /* Header (matches xdcoutpost.xyz) */
+    .site-header {
+      position: sticky; top: 0; z-index: 10;
+      background: rgb(30 26 74 / 0.85); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--line);
+    }
+    .site-header .wrap { display: flex; align-items: center; justify-content: space-between; height: 4rem; gap: 1rem; }
+    .crumbs { display: flex; align-items: center; gap: 0.6rem; min-width: 0; }
+    .brand {
+      display: flex; align-items: center; gap: 0.6rem; white-space: nowrap;
+      color: var(--ink); text-decoration: none;
+      font-family: var(--display); font-weight: 700; font-size: 1.2rem; letter-spacing: -0.01em;
+    }
+    .brand svg { width: 1.6rem; height: 1.6rem; flex: none; }
+    .crumbs .sep { color: var(--line); font-size: 1.3rem; }
+    .crumbs .here { color: var(--mist); font-weight: 600; white-space: nowrap; }
+    .site-nav { display: flex; gap: clamp(1rem, 3vw, 2rem); }
+    .site-nav a { color: var(--mist); text-decoration: none; font-size: 0.95rem; font-weight: 500; white-space: nowrap; padding: 0.75rem 0; }
+    .site-nav a:hover { color: var(--ink); }
+    @media (max-width: 720px) { .site-nav .wide { display: none; } }
+    @media (max-width: 420px) {
+      .crumbs .sep, .crumbs .here { display: none; }
+    }
+
+    /* Hero */
+    .hero { padding: clamp(3rem, 7vw, 5rem) 0 clamp(3rem, 6vw, 4.5rem); }
+    .hero-grid { display: grid; gap: 2.5rem 4rem; }
+    @media (min-width: 1024px) { .hero-grid { grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr); align-items: start; } }
+    .hero h1 {
+      font-family: var(--display); font-weight: 750; font-stretch: 82%;
+      font-size: clamp(2.5rem, 6vw, 4.75rem); line-height: 0.98; letter-spacing: -0.028em;
+      margin: 0 0 1.5rem; max-width: 13ch; text-wrap: balance;
+    }
+    .hero .lede { font-size: clamp(1.1rem, 2vw, 1.25rem); color: var(--mist); margin: 0 0 1.75rem; max-width: 34em; }
+    .facts { list-style: none; margin: 0 0 2rem; padding: 0; display: flex; flex-wrap: wrap; gap: 0.5rem; }
+    .kind {
+      display: inline-block; font-weight: 600; font-size: 0.8rem;
+      padding: 0.2rem 0.7rem; border-radius: 999px; border: 1px solid currentColor; white-space: nowrap;
+    }
+    .kind-pq { color: var(--night); background: var(--signal); border-color: var(--signal); }
+    .kind-web { color: var(--signal); }
+    .kind-quiet { color: var(--mist); }
+    .hero .actions { margin: 0; }
+
+    .panel { background: var(--dusk); border: 1px solid var(--line); border-radius: 18px; padding: clamp(1.25rem, 3vw, 2rem); }
+    .panel h2 { font-family: var(--display); font-weight: 700; font-stretch: 90%; font-size: 1.35rem; line-height: 1.2; margin: 0 0 0.4rem; }
+    .panel > p { color: var(--mist); font-size: 0.95rem; margin: 0 0 1.25rem; }
+    .payload-bar { display: flex; height: 2.75rem; border-radius: 8px; overflow: hidden; font-size: 0.8rem; font-weight: 600; }
+    .payload-bar span { display: flex; align-items: center; padding: 0 0.75rem; white-space: nowrap; overflow: hidden; color: var(--night); }
+    .seg-kem { flex: 5.2; background: var(--signal); }
+    .seg-iv  { flex: 0.9; background: #C9BCF5; justify-content: center; padding: 0 0.25rem !important; }
+    .seg-msg { flex: 2.6; background: #FFC7D7; }
+    .payload-key { display: grid; grid-template-columns: auto 1fr; gap: 0.25rem 0.75rem; margin: 0.9rem 0 0; font-size: 0.875rem; color: var(--mist); }
+    .payload-key dt { color: var(--ink); font-weight: 600; white-space: nowrap; }
+    .payload-key dd { margin: 0; }
+
+    /* Steps: same two-column pattern as the tool catalogue */
+    .steps { background: var(--deep); padding: clamp(1rem, 3vw, 2rem) 0 clamp(3rem, 7vw, 5rem); }
+    .group { display: grid; gap: 1.5rem 3rem; grid-template-columns: 1fr; padding: 2.5rem 0; border-top: 1px solid var(--line); }
+    .group:first-child { border-top: 0; }
+    @media (min-width: 900px) {
+      .group { grid-template-columns: 17rem minmax(0, 1fr); }
+      .group-head { position: sticky; top: 6rem; align-self: start; }
+    }
+    .step-no {
+      display: inline-grid; place-items: center; width: 2rem; height: 2rem; border-radius: 50%;
+      border: 1.5px solid var(--signal); color: var(--signal);
+      font-family: var(--display); font-weight: 700; font-size: 1rem; margin-bottom: 0.75rem;
+    }
+    .group-head h2 { font-family: var(--display); font-weight: 700; font-stretch: 90%; font-size: 1.6rem; line-height: 1.15; letter-spacing: -0.015em; margin: 0 0 0.5rem; }
+    .group-head p { color: var(--mist); margin: 0; font-size: 0.975rem; }
+    .group-body { display: grid; gap: 1.25rem; max-width: 46rem; }
+
+    /* Forms */
+    .field { display: grid; gap: 0.4rem; }
+    .field label, .field .label { font-weight: 600; font-size: 0.95rem; }
+    .field .hint { color: var(--mist); font-size: 0.875rem; margin: 0; }
+    .row-2 { display: grid; gap: 1.25rem; }
+    @media (min-width: 640px) { .row-2 { grid-template-columns: 1fr 1fr; } }
+    input, textarea {
+      width: 100%; font: inherit; font-size: 1rem; color: var(--ink);
+      background: var(--night); border: 1px solid var(--line); border-radius: 8px;
+      padding: 0.75rem 0.9rem; transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    textarea { resize: vertical; min-height: 6rem; }
+    textarea.mono, input.mono { font-family: var(--mono); font-size: 0.85rem; }
+    input::placeholder, textarea::placeholder { color: #8E84BE; }
+    input:focus, textarea:focus { outline: none; border-color: var(--signal); box-shadow: 0 0 0 3px rgb(143 220 255 / 0.2); }
+    input[aria-invalid="true"], textarea[aria-invalid="true"] { border-color: var(--flare); }
+
+    details.settings { border: 1px solid var(--line); border-radius: 8px; padding: 0 0.9rem; }
+    details.settings summary { cursor: pointer; padding: 0.75rem 0; color: var(--mist); font-weight: 600; font-size: 0.95rem; }
+    details.settings[open] { padding-bottom: 0.9rem; }
+
+    /* Buttons (match main site) */
+    .actions { display: flex; flex-wrap: wrap; gap: 0.6rem; align-items: center; }
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
+      padding: 0.7rem 1.2rem; border-radius: 8px; border: 1px solid transparent;
+      font: inherit; font-weight: 600; font-size: 0.975rem; text-decoration: none; white-space: nowrap; cursor: pointer;
+      transition: background-color 0.15s, color 0.15s, border-color 0.15s;
+    }
+    .btn-primary { background: var(--signal); color: var(--night); }
+    .btn-primary:hover { background: var(--ink); color: var(--night); }
+    .btn-ghost { background: transparent; border-color: var(--line); color: var(--ink); }
+    .btn-ghost:hover { border-color: var(--signal); color: var(--ink); }
+    .btn-small { padding: 0.35rem 0.75rem; font-size: 0.85rem; }
+    .btn[disabled] { opacity: 0.55; cursor: progress; }
+    .btn svg { width: 1rem; height: 1rem; fill: currentColor; flex: none; }
+
+    /* Key / output boxes */
+    .out { display: grid; gap: 0.4rem; }
+    .out-head { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; flex-wrap: wrap; }
+    .out-head .label { font-weight: 600; font-size: 0.95rem; }
+    .out-head .actions { gap: 0.4rem; }
+    .box {
+      background: var(--night); border: 1px solid var(--line); border-radius: 8px;
+      padding: 0.75rem 0.9rem; min-height: 3.25rem;
+      font-family: var(--mono); font-size: 0.8rem; line-height: 1.5; word-break: break-all;
+      max-height: 9rem; overflow-y: auto; color: var(--ink);
+    }
+    .box:empty::before { content: attr(data-empty); color: #8E84BE; font-family: var(--body); font-size: 0.9rem; }
+    .box.masked:not(:empty) { filter: blur(5px); user-select: none; }
+    .box.message { font-family: var(--body); font-size: 1rem; word-break: normal; white-space: pre-wrap; max-height: none; min-height: 5rem; }
+
+    /* Notices */
+    .notice { margin: 0; padding: 0.8rem 1rem; border-radius: 8px; border: 1px solid var(--line); background: var(--dusk); font-size: 0.95rem; }
+    .notice strong { font-weight: 600; }
+    .notice[data-tone="error"] { border-color: var(--flare); background: rgb(255 158 187 / 0.08); }
+    .notice[data-tone="ok"] { border-color: var(--ok); background: rgb(110 231 183 / 0.07); }
+    .notice[data-tone="warn"] { border-left: 3px solid var(--flare); }
+    .notice .hash { font-family: var(--mono); font-size: 0.8rem; word-break: break-all; }
+    .notice .actions { margin-top: 0.6rem; }
+
+    .wallet { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.75rem; padding: 0.75rem 0.9rem; border: 1px solid var(--line); border-radius: 8px; }
+    .wallet-state { display: flex; align-items: center; gap: 0.6rem; font-size: 0.95rem; }
+    .wallet-state .dot { width: 0.55rem; height: 0.55rem; border-radius: 50%; background: var(--line); flex: none; }
+    .wallet-state.on .dot { background: var(--ok); box-shadow: 0 0 0 4px rgb(110 231 183 / 0.18); }
+    .wallet-state code { font-family: var(--mono); font-size: 0.85rem; }
+
+    /* Things to know */
+    .know { padding: clamp(3rem, 7vw, 5rem) 0; }
+    .know h2 { font-family: var(--display); font-weight: 700; font-stretch: 90%; font-size: clamp(2rem, 4vw, 2.75rem); letter-spacing: -0.02em; line-height: 1.1; margin: 0 0 2rem; }
+    .know-grid { display: grid; gap: 1.5rem 3rem; }
+    @media (min-width: 800px) { .know-grid { grid-template-columns: 1fr 1fr; } }
+    .know h3 { font-family: var(--display); font-weight: 650; font-size: 1.2rem; margin: 0 0 0.35rem; }
+    .know p, .know li { color: var(--mist); margin: 0; }
+    .know ol { margin: 0.5rem 0 0; padding-left: 1.25rem; display: grid; gap: 0.3rem; }
+
+    /* Contact + footer (match main site) */
+    .contact { padding: clamp(3rem, 7vw, 5rem) 0; border-top: 1px solid var(--line); }
+    .contact .wrap { display: grid; gap: 2rem 4rem; }
+    @media (min-width: 900px) { .contact .wrap { grid-template-columns: 1fr 1fr; align-items: start; } }
+    .contact h2 { font-family: var(--display); font-weight: 700; font-stretch: 90%; font-size: clamp(2rem, 4vw, 2.75rem); letter-spacing: -0.02em; line-height: 1.1; margin: 0 0 1rem; }
+    .contact p { color: var(--mist); margin: 0; max-width: 30em; }
+    .channels { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--line); }
+    .channels a { display: flex; align-items: center; gap: 1rem; padding: 1rem 0.25rem; border-bottom: 1px solid var(--line); color: var(--ink); text-decoration: none; }
+    .channels a:hover { color: var(--signal); }
+    .channels svg { width: 1.4rem; height: 1.4rem; fill: currentColor; flex: none; }
+    .channels .name { font-weight: 600; min-width: 5.5rem; }
+    .channels .handle { color: var(--mist); }
+    .site-footer { border-top: 1px solid var(--line); padding: 2rem 0; color: var(--mist); font-size: 0.9rem; }
+    .site-footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 1rem; }
+    .site-footer p { margin: 0; }
+    .site-footer a { display: inline-block; padding: 0.6rem 0; }
+
+    /* ---- XDC Proof specific ---- */
+    .hint { color: var(--mist); font-size: 0.875rem; margin: 0; }
+    .optional { color: var(--mist); font-weight: 400; }
+
+    /* The paper receipt in the hero */
+    .paper {
+      background: #FBFAFF; color: #2C3E50; border-radius: 6px; padding: 1.4rem 1.4rem 1rem;
+      box-shadow: 0 24px 60px -20px rgb(0 0 0 / 0.55); transform: rotate(1.2deg);
+      font-family: Helvetica, Arial, sans-serif; font-size: 0.78rem; line-height: 1.45; max-width: 25rem; margin-left: auto;
+    }
+    .paper-top { display: grid; grid-template-columns: 3.2rem 1fr 3.2rem; align-items: start; gap: 0.75rem; margin-bottom: 1rem; }
+    .paper-logo { width: 3.2rem; height: 3.2rem; border-radius: 4px; background: repeating-linear-gradient(45deg, #ECE9F7 0 6px, #F5F3FC 6px 12px); display: grid; place-items: center; font-size: 0.6rem; color: #8A86A8; text-align: center; line-height: 1.1; }
+    .paper-title { text-align: center; font-weight: 700; font-size: 1.05rem; padding-top: 0.6rem; }
+    .paper-qr { text-align: center; font-size: 0.55rem; color: #777; }
+    .paper-qr canvas { width: 3.2rem; height: 3.2rem; display: block; }
+    .paper h4 { margin: 0.7rem 0 0.25rem; font-size: 0.8rem; border-bottom: 1px solid #2C3E50; padding-bottom: 0.15rem; }
+    .paper p { margin: 0; }
+    .paper b { font-weight: 700; }
+    .paper .mono { font-family: var(--mono); font-size: 0.68rem; word-break: break-all; }
+    .paper-foot { text-align: center; color: #999; font-size: 0.6rem; margin-top: 0.9rem; }
+    .paper-caption { text-align: right; color: var(--mist); font-size: 0.85rem; margin: 0.9rem 0 0; }
+    @media (max-width: 1023px) { .paper { margin: 0 auto; transform: none; } .paper-caption { text-align: center; } }
+
+    fieldset { border: 1px solid var(--line); border-radius: 12px; padding: 1rem 1rem 1.1rem; margin: 0; display: grid; gap: 0.75rem; min-width: 0; }
+    legend { padding: 0 0.4rem; font-family: var(--display); font-weight: 650; font-size: 1.05rem; }
+    legend small { font-family: var(--body); font-weight: 400; font-size: 0.85rem; color: var(--mist); }
+    .parties { display: grid; gap: 1rem; }
+    @media (min-width: 760px) { .parties { grid-template-columns: 1fr 1fr; } }
+    input.autofilled, textarea.autofilled { border-color: rgb(143 220 255 / 0.55); background: #1d2155; }
+
+    .txcard { border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+    .txcard .head { display: flex; align-items: center; gap: 0.6rem; padding: 0.7rem 1rem; background: var(--dusk); border-bottom: 1px solid var(--line); font-weight: 600; }
+    .txcard .dot { width: 0.55rem; height: 0.55rem; border-radius: 50%; background: var(--ok); box-shadow: 0 0 0 4px rgb(110 231 183 / 0.18); flex: none; }
+    .txcard.bad .dot { background: var(--flare); box-shadow: 0 0 0 4px rgb(255 158 187 / 0.18); }
+    .txcard table { width: 100%; border-collapse: collapse; font-size: 0.95rem; }
+    .txcard th, .txcard td { padding: 0.55rem 1rem; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+    .txcard tr:last-child th, .txcard tr:last-child td { border-bottom: 0; }
+    .txcard th { color: var(--mist); font-weight: 400; width: 32%; }
+    .txcard td { word-break: break-all; font-variant-numeric: tabular-nums; }
+    .txcard .who { word-break: normal; font-weight: 600; display: block; }
+    .txcard .addr { font-family: var(--mono); font-size: 0.82rem; color: var(--mist); }
+    .loading { display: flex; align-items: center; gap: 0.6rem; color: var(--mist); }
+    .spinner { width: 1rem; height: 1rem; border-radius: 50%; border: 2px solid var(--line); border-top-color: var(--signal); animation: spin 0.8s linear infinite; flex: none; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .book { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+    .book th, .book td { text-align: left; padding: 0.45rem 0.5rem; border-bottom: 1px solid var(--line); }
+    .book th { color: var(--mist); font-weight: 400; }
+    .book td.addr { font-family: var(--mono); font-size: 0.8rem; color: var(--mist); }
+    .table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 8px; }
+
+    details.format { border: 1px solid var(--line); border-radius: 8px; padding: 0 0.9rem; }
+    details.format summary { cursor: pointer; padding: 0.7rem 0; color: var(--mist); font-weight: 600; font-size: 0.95rem; }
+    details.format[open] { padding-bottom: 0.9rem; }
+    details.format pre { margin: 0 0 0.75rem; padding: 0.75rem; background: var(--night); border: 1px solid var(--line); border-radius: 8px; overflow-x: auto; font-family: var(--mono); font-size: 0.78rem; color: var(--mist); }
+    details.format p, details.format li { color: var(--mist); font-size: 0.9rem; margin: 0 0 0.4rem; }
+    details.format ul { margin: 0 0 0.6rem; padding-left: 1.2rem; }
+
+    .bar { height: 0.5rem; border-radius: 999px; background: var(--night); border: 1px solid var(--line); overflow: hidden; }
+    .bar > div { height: 100%; width: 0; background: var(--signal); transition: width 0.25s; }
+    .file-btn { position: relative; }
+    .skips { margin: 0.4rem 0 0; padding-left: 1.2rem; font-size: 0.875rem; color: var(--mist); }
+  </style>
+  <script src="/assets/analytics.js"></script>
+</head>
+<body>
+  <a class="skip" href="#single">Skip to the tool</a>
+
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <symbol id="i-beacon" viewBox="0 0 32 32">
+      <path d="M11 29 L16 11 L21 29 M12.6 23 H19.4 M13.8 18 H18.2" fill="none" stroke="#C3B8EA" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      <circle cx="16" cy="7.5" r="3" fill="#FF9EBB"/>
+      <path d="M9.5 4.5 A9 9 0 0 0 9.5 10.5 M22.5 4.5 A9 9 0 0 1 22.5 10.5" fill="none" stroke="#FF9EBB" stroke-width="1.75" stroke-linecap="round"/>
+    </symbol>
+    <symbol id="i-github" viewBox="0 0 24 24"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></symbol>
+    <symbol id="i-telegram" viewBox="0 0 24 24"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></symbol>
+    <symbol id="i-discord" viewBox="0 0 24 24"><path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189Z"/></symbol>
+    <symbol id="i-x" viewBox="0 0 24 24"><path d="M14.234 10.162 22.977 0h-2.072l-7.591 8.824L7.251 0H.258l9.168 13.343L.258 24H2.33l8.016-9.318L16.749 24h6.993zm-2.837 3.299-.929-1.329L3.076 1.56h3.182l5.965 8.532.929 1.329 7.754 11.09h-3.182z"/></symbol>
+  </svg>
+
+  <header class="site-header">
+    <div class="wrap">
+      <div class="crumbs">
+        <a class="brand" href="/"><svg aria-hidden="true"><use href="#i-beacon"/></svg>XDC Outpost</a>
+        <span class="sep" aria-hidden="true">/</span>
+        <span class="here">XDC Proof</span>
+      </div>
+      <nav class="site-nav" aria-label="Main">
+        <a href="/#tools">All tools</a>
+        <a class="wide" href="#know">How it works</a>
+        <a class="wide" href="https://github.com/s4njk4n/XDC_Proof" target="_blank" rel="noopener" data-goatcounter-click="github/XDC_Proof">Source code</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero" aria-labelledby="title">
+      <div class="wrap hero-grid">
+        <div>
+          <h1 id="title">Payment receipts for XDC transactions</h1>
+          <p class="lede">Turn any XDC payment into a PDF receipt with a QR code that links to the transaction on XDCScan, so anyone can check it. Make one at a time or a whole batch, for invoices, bookkeeping or trade finance.</p>
+          <ul class="facts" aria-label="Key facts">
+            <li><span class="kind kind-web">Web app</span></li>
+            <li><span class="kind kind-quiet">PDF with QR verification</span></li>
+            <li><span class="kind kind-quiet">Batch to ZIP</span></li>
+            <li><span class="kind kind-quiet">Runs in your browser</span></li>
+          </ul>
+          <div class="actions">
+            <a class="btn btn-primary" href="#single">Create a receipt</a>
+            <a class="btn btn-ghost" href="#batch">Make a batch</a>
+          </div>
+        </div>
+
+        <figure style="margin:0" aria-label="Example of a receipt">
+          <div class="paper" aria-hidden="true">
+            <div class="paper-top">
+              <div class="paper-logo">Your<br>logo</div>
+              <div class="paper-title">Payment Receipt</div>
+              <div class="paper-qr"><canvas id="sampleQr" width="64" height="64"></canvas>Scan to Verify</div>
+            </div>
+            <h4>Date</h4><p>Sat, 01 Nov 2026 03:12:45 UTC</p>
+            <h4>Seller Information</h4><p><b>Name:</b> Acme Trading Pty Ltd</p>
+            <h4>Purchaser Information</h4><p><b>Name:</b> Global Imports Ltd</p>
+            <h4>Transaction Details</h4>
+            <p><b>Status:</b> Confirmed in block 94,512,330</p>
+            <p><b>Amount:</b> 25,000 XDC</p>
+            <p class="mono"><b style="font-family:Helvetica,Arial,sans-serif">Hash:</b> 0x7f8c9d2b…e5f6a7b8c9</p>
+            <h4>Payment Purpose</h4><p>Invoice #501: 500 widgets</p>
+            <div class="paper-foot">Generated with XDC Proof</div>
+          </div>
+          <figcaption class="paper-caption">Example receipt</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <div class="steps">
+      <div class="wrap">
+
+        <!-- Single receipt -->
+        <section class="group" id="single" aria-labelledby="single-title">
+          <div class="group-head">
+            <h2 id="single-title">Create a receipt</h2>
+            <p>Paste a transaction hash to look it up, add what the payment was for, and download the PDF.</p>
+          </div>
+          <div class="group-body">
+            <div class="field">
+              <label for="txHash">Transaction hash</label>
+              <input type="text" id="txHash" class="mono" placeholder="0x…" autocomplete="off" autocapitalize="off" spellcheck="false">
+            </div>
+            <div id="txSummary" aria-live="polite"></div>
+
+            <div class="field">
+              <label for="description">What the payment was for</label>
+              <textarea id="description" rows="3" placeholder="e.g. Invoice #123: 500 widgets"></textarea>
+            </div>
+
+            <p class="notice" id="autofillNote" hidden></p>
+
+            <div class="parties">
+              <fieldset>
+                <legend>Seller <small>(received the payment) · optional</small></legend>
+                <div class="field"><label for="sellerName">Name</label><input type="text" id="sellerName" autocomplete="organization"></div>
+                <div class="field"><label for="sellerAddress">Address</label><input type="text" id="sellerAddress"></div>
+                <div class="field"><label for="sellerPhone">Phone</label><input type="tel" id="sellerPhone" placeholder="+61 2 5550 1234"></div>
+                <div class="field"><label for="sellerEmail">Email</label><input type="email" id="sellerEmail" placeholder="seller@example.com"></div>
+              </fieldset>
+              <fieldset>
+                <legend>Purchaser <small>(sent the payment) · optional</small></legend>
+                <div class="field"><label for="purchaserName">Name</label><input type="text" id="purchaserName"></div>
+                <div class="field"><label for="purchaserAddress">Address</label><input type="text" id="purchaserAddress"></div>
+                <div class="field"><label for="purchaserPhone">Phone</label><input type="tel" id="purchaserPhone"></div>
+                <div class="field"><label for="purchaserEmail">Email</label><input type="email" id="purchaserEmail"></div>
+              </fieldset>
+            </div>
+
+            <div class="field">
+              <label for="sellerLogo">Seller logo URL <span class="optional">(optional)</span></label>
+              <input type="url" id="sellerLogo" placeholder="https://…/logo.png" autocomplete="off" spellcheck="false">
+              <p class="hint">A square PNG or JPG works best. Some image hosts block use on other sites; if so the receipt is made without the logo and you’ll be told.</p>
+            </div>
+
+            <details class="settings">
+              <summary>Network settings</summary>
+              <div class="field">
+                <label for="rpcUrl">XDC RPC endpoint</label>
+                <input type="text" id="rpcUrl" class="mono" value="https://rpc.plugin.global/xdcmainnet" placeholder="https://rpc.plugin.global/xdcmainnet" spellcheck="false">
+                <p class="hint">Use an Apothem testnet RPC for testnet transactions; the receipt’s QR code then points to the testnet explorer.</p>
+              </div>
+            </details>
+
+            <div class="actions">
+              <button type="button" class="btn btn-primary" id="generateSingleBtn" onclick="generateReceipt()">Download PDF receipt</button>
+            </div>
+            <p class="notice" id="errorMessage" role="alert" hidden></p>
+          </div>
+        </section>
+
+        <!-- Address book -->
+        <section class="group" id="entities" aria-labelledby="entities-title">
+          <div class="group-head">
+            <h2 id="entities-title">Address book</h2>
+            <p>Save the names and details behind addresses you deal with often. Receipts then fill them in automatically. Saved only in this browser.</p>
+          </div>
+          <div class="group-body">
+            <div id="csvStatus" class="notice" role="status">No address book saved yet.</div>
+            <div id="bookPreview"></div>
+            <input type="file" id="csvFile" accept=".csv,text/csv" hidden>
+            <div class="actions">
+              <button type="button" class="btn btn-ghost" onclick="document.getElementById('csvFile').click()">Upload CSV</button>
+              <button type="button" class="btn btn-ghost" onclick="toggleCsvPaste()" aria-expanded="false" id="pasteToggle">Paste CSV</button>
+              <button type="button" class="btn btn-ghost" onclick="downloadSampleCsv()">Download sample CSV</button>
+              <button type="button" class="btn btn-ghost" onclick="clearCsvData()" id="clearBookBtn" hidden>Clear address book</button>
+            </div>
+            <div id="csvPasteArea" class="field" hidden>
+              <label for="csvText">CSV text</label>
+              <textarea id="csvText" class="mono" rows="5" placeholder='"address","name","company","address_line","phone","email","logo_url"'></textarea>
+              <div class="actions"><button type="button" class="btn btn-primary btn-small" onclick="saveCsvFromText()">Save address book</button></div>
+            </div>
+            <details class="format">
+              <summary>CSV format</summary>
+              <pre>"address","name","company","address_line","phone","email","logo_url"
+"xdc1a2b…","Acme Corp","Acme Corporation","123 Main St, Suite 100, New York","555-1000","acme@corp.com","https://example.com/acme.png"</pre>
+              <ul>
+                <li><strong>address</strong> is the wallet address (xdc… or 0x…). <strong>name</strong> is shown on receipts; <strong>company</strong> is used if name is empty.</li>
+                <li>Put every value in double quotes, so commas inside addresses don’t break the row.</li>
+                <li>Uploading a new file replaces the saved address book.</li>
+              </ul>
+            </details>
+          </div>
+        </section>
+
+        <!-- Batch -->
+        <section class="group" id="batch" aria-labelledby="batch-title">
+          <div class="group-head">
+            <h2 id="batch-title">Batch receipts</h2>
+            <p>Upload a list of transaction hashes and descriptions, and download every receipt in one ZIP. Names come from your address book.</p>
+          </div>
+          <div class="group-body">
+            <input type="file" id="batchCsvFile" accept=".csv,text/csv" hidden>
+            <div class="actions">
+              <button type="button" class="btn btn-ghost" onclick="document.getElementById('batchCsvFile').click()">Upload batch CSV</button>
+              <button type="button" class="btn btn-ghost" onclick="downloadSampleBatchCsv()">Download sample CSV</button>
+            </div>
+            <div id="batchStatus" class="notice" role="status" hidden></div>
+            <div class="actions">
+              <button type="button" class="btn btn-primary" id="generateBatchBtn" onclick="startBatchGeneration()" hidden>Create all receipts</button>
+            </div>
+            <div id="batchProgress" hidden>
+              <div class="bar" role="progressbar" aria-labelledby="progressText" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="progressWrap"><div id="progressBar"></div></div>
+              <div class="actions" style="justify-content:space-between;margin-top:0.5rem">
+                <span class="hint" id="progressText">0 / 0</span>
+                <button type="button" class="btn btn-ghost btn-small" onclick="cancelBatch()">Cancel</button>
+              </div>
+            </div>
+            <details class="format">
+              <summary>CSV format</summary>
+              <pre>"tx_hash","description"
+"0x7f8c…a7b8c9","Invoice #501: 500 widgets"
+"0x1a2b…e5f6a7","Consulting, Q3 2026"</pre>
+              <ul>
+                <li>Each hash is 0x followed by 64 characters. Rows with a missing hash or description are skipped and listed.</li>
+                <li>Failed or unconfirmed transactions are left out of the ZIP. A <strong>summary.csv</strong> inside the ZIP lists every row and what happened to it.</li>
+              </ul>
+            </details>
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <section class="know" id="know" aria-labelledby="know-title">
+      <div class="wrap">
+        <h2 id="know-title">Things to know</h2>
+        <div class="know-grid">
+          <div>
+            <h3>What a receipt proves</h3>
+            <p>The amount, date, addresses, block and status come straight from the blockchain, and the QR code lets anyone check them on XDCScan. Names, contact details and the description are what you enter, so they’re only as reliable as their source.</p>
+          </div>
+          <div>
+            <h3>Only completed payments</h3>
+            <p>Receipts are only made for transactions that are confirmed and succeeded. Failed or still-pending transactions are refused, so a receipt never shows a payment that didn’t happen.</p>
+          </div>
+          <div>
+            <h3>XDC and token payments</h3>
+            <p>Plain XDC transfers and XRC-20 token transfers are both supported. For tokens, the receipt shows the token amount and the real recipient, not the token contract.</p>
+          </div>
+          <div>
+            <h3>Any language</h3>
+            <p>Names, addresses and descriptions can be in any language. Chinese, Japanese, Korean, Cyrillic, Greek and accented Latin use embedded fonts, which load the first time they’re needed. Scripts like Arabic, Hebrew, Hindi and Thai are drawn by your browser so their letters join and read in the right direction.</p>
+          </div>
+          <div>
+            <h3>Private by design</h3>
+            <p>Receipts are created on your device. The only thing sent anywhere is the transaction lookup to the XDC RPC. Your address book stays in this browser until you clear it.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="contact" id="contact" aria-labelledby="contact-title">
+      <div class="wrap">
+        <div>
+          <h2 id="contact-title">Need help?</h2>
+          <p>Questions about XDC Proof, a receipt that looks wrong, or a feature you need for your accounts? Message me on whichever platform suits you.</p>
+        </div>
+        <ul class="channels">
+          <li><a href="https://t.me/s4njk4n" target="_blank" rel="noopener" data-goatcounter-click="contact/telegram"><svg aria-hidden="true"><use href="#i-telegram"/></svg><span class="name">Telegram</span><span class="handle">@s4njk4n</span></a></li>
+          <li><a href="https://discord.com/users/852434672793288724" target="_blank" rel="noopener" data-goatcounter-click="contact/discord"><svg aria-hidden="true"><use href="#i-discord"/></svg><span class="name">Discord</span><span class="handle">@s4njk4n</span></a></li>
+          <li><a href="https://x.com/s4njk4n" target="_blank" rel="noopener" data-goatcounter-click="contact/x"><svg aria-hidden="true"><use href="#i-x"/></svg><span class="name">X</span><span class="handle">@s4njk4n</span></a></li>
+          <li><a href="https://github.com/s4njk4n/XDC_Proof" target="_blank" rel="noopener" data-goatcounter-click="github/XDC_Proof"><svg aria-hidden="true"><use href="#i-github"/></svg><span class="name">GitHub</span><span class="handle">XDC Proof</span></a></li>
+        </ul>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap">
+      <p>© <span id="year">2026</span> XDC Outpost, by <a href="https://github.com/s4njk4n?tab=repositories" target="_blank" rel="noopener" data-goatcounter-click="github/profile">s4njk4n</a></p>
+      <p><a href="/">More XDC tools</a></p>
+    </div>
+  </footer>
+
+  <!-- Self-hosted, version-pinned libraries -->
+  <script src="vendor/jspdf-2.5.1.umd.min.js"></script>
+  <script src="vendor/qrcode-1.5.0.min.js"></script>
+  <script src="vendor/jszip-3.10.1.min.js"></script>
+  <script>
+    document.getElementById('year').textContent = new Date().getFullYear();
+    const $ = id => document.getElementById(id);
+    const DEFAULT_RPC = 'https://rpc.plugin.global/xdcmainnet';
+    const STORE_KEY = 'xdcProofEntities';   // same key as earlier versions, so saved address books carry over
+    const PARTY_FIELDS = ['sellerName', 'sellerAddress', 'sellerPhone', 'sellerEmail', 'purchaserName', 'purchaserAddress', 'purchaserPhone', 'purchaserEmail', 'sellerLogo'];
+    const track = name => { if (window.xdcTrack) window.xdcTrack(name); };
+
+    // ===== Helpers =====
+    function escapeHtml(s) { return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+    function toXdc(addr) { return addr ? addr.toLowerCase().replace(/^0x/, 'xdc') : addr; }
+    function shortAddr(a) { const x = toXdc(a); return x.slice(0, 9) + '…' + x.slice(-6); }
+    // Exact integer → decimal string (no floating point), with thousands separators.
+    function formatUnits(value, decimals) {
+      let v = BigInt(value); const neg = v < 0n; if (neg) v = -v;
+      const base = 10n ** BigInt(decimals);
+      const int = (v / base).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+      const frac = (v % base).toString().padStart(decimals, '0').replace(/0+$/, '');
+      return (neg ? '-' : '') + int + (frac ? '.' + frac : '');
+    }
+    function setNotice(id, tone, html) {
+      const el = $(id);
+      if (!html) { el.hidden = true; el.innerHTML = ''; return; }
+      if (tone) el.dataset.tone = tone; else delete el.dataset.tone;
+      el.innerHTML = html; el.hidden = false;
+    }
+    function download(name, blob) {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a'); a.href = url; a.download = name;
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1500);
+    }
+    function store(op, value) {
+      try {
+        if (op === 'get') return localStorage.getItem(STORE_KEY);
+        if (op === 'set') localStorage.setItem(STORE_KEY, value);
+        if (op === 'del') localStorage.removeItem(STORE_KEY);
+      } catch (_) { return null; }
+    }
+
+    // ===== Blockchain lookup =====
+    function getRpcUrl() {
+      const v = $('rpcUrl').value.trim();
+      return /^https?:\/\/.+/.test(v) ? v : DEFAULT_RPC;
+    }
+    async function rpc(url, method, params) {
+      let res;
+      try { res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ jsonrpc: '2.0', method, params, id: 1 }) }); }
+      catch (_) { const e = new Error('Couldn’t reach the RPC endpoint. Check your connection, or try another RPC under Network settings.'); e.code = 'NETWORK'; throw e; }
+      let data;
+      try { data = await res.json(); } catch (_) { const e = new Error(`The RPC endpoint returned an unexpected response (HTTP ${res.status}).`); e.code = 'NETWORK'; throw e; }
+      if (data.error) { const e = new Error(`The RPC endpoint returned an error: ${data.error.message || 'unknown'}.`); e.code = 'RPC'; throw e; }
+      return data.result;
+    }
+    const chainCache = {};
+    async function chainIdFor(url) {
+      if (chainCache[url] === undefined) { try { chainCache[url] = parseInt(await rpc(url, 'eth_chainId', []), 16); } catch (_) { chainCache[url] = 50; } }
+      return chainCache[url];
+    }
+    function explorerFor(chainId) { return chainId === 51 ? 'https://testnet.xdcscan.com/tx/' : 'https://xdcscan.com/tx/'; }
+    function networkName(chainId) { return chainId === 50 ? 'XDC Mainnet' : chainId === 51 ? 'XDC Apothem Testnet' : `Chain ${chainId}`; }
+
+    function decodeAbiString(hex) {
+      if (!hex || hex === '0x') return '';
+      const h = hex.slice(2);
+      try {
+        if (h.length >= 192) {                      // dynamic string: offset, length, data
+          const len = parseInt(h.slice(64, 128), 16);
+          const bytes = h.slice(128, 128 + len * 2).match(/.{2}/g) || [];
+          return new TextDecoder().decode(new Uint8Array(bytes.map(b => parseInt(b, 16)))).trim();
+        }
+        const bytes = (h.slice(0, 64).match(/.{2}/g) || []).map(b => parseInt(b, 16)).filter(b => b);   // bytes32 symbol
+        return new TextDecoder().decode(new Uint8Array(bytes)).trim();
+      } catch (_) { return ''; }
+    }
+
+    // Looks up a transaction and everything a receipt needs. Throws with e.code on problems.
+    async function fetchTx(hash, rpcUrl = getRpcUrl()) {
+      const tx = await rpc(rpcUrl, 'eth_getTransactionByHash', [hash]);
+      if (!tx || !tx.hash) { const e = new Error('Transaction not found on this network. Check the hash, or whether it’s a testnet transaction (see Network settings).'); e.code = 'NOT_FOUND'; throw e; }
+      if (!tx.blockNumber) { const e = new Error('This transaction hasn’t been confirmed yet. Try again in a few seconds.'); e.code = 'PENDING'; throw e; }
+      const [receipt, block, chainId] = await Promise.all([
+        rpc(rpcUrl, 'eth_getTransactionReceipt', [hash]),
+        rpc(rpcUrl, 'eth_getBlockByNumber', [tx.blockNumber, false]),
+        chainIdFor(rpcUrl)
+      ]);
+      if (!receipt) { const e = new Error('This transaction hasn’t been confirmed yet. Try again in a few seconds.'); e.code = 'PENDING'; throw e; }
+      if (receipt.status !== undefined && receipt.status !== null && BigInt(receipt.status) === 0n) {
+        const e = new Error('This transaction failed on chain, so no payment was made. A receipt can’t be created for it.'); e.code = 'FAILED'; throw e;
+      }
+      const out = {
+        hash: tx.hash, from: tx.from.toLowerCase(), to: tx.to ? tx.to.toLowerCase() : null,
+        value: BigInt(tx.value || '0x0'), blockNumber: BigInt(tx.blockNumber),
+        timestamp: block && block.timestamp ? parseInt(block.timestamp, 16) : null,
+        fee: BigInt(receipt.gasUsed || '0x0') * BigInt(receipt.effectiveGasPrice || tx.gasPrice || '0x0'),
+        chainId, input: tx.input || tx.data || '0x', token: null, contractCall: false
+      };
+      const input = out.input.toLowerCase();
+      if (out.to && input.startsWith('0xa9059cbb') && input.length >= 138) {
+        const [sym, dec] = await Promise.all([
+          rpc(rpcUrl, 'eth_call', [{ to: out.to, data: '0x95d89b41' }, 'latest']).catch(() => '0x'),
+          rpc(rpcUrl, 'eth_call', [{ to: out.to, data: '0x313ce567' }, 'latest']).catch(() => '0x')
+        ]);
+        out.token = {
+          contract: out.to,
+          recipient: '0x' + input.slice(34, 74),
+          amount: BigInt('0x' + input.slice(74, 138)),
+          symbol: decodeAbiString(sym) || 'tokens',
+          decimals: dec && dec !== '0x' ? Number(BigInt(dec)) : null
+        };
+      } else if (input.length > 2 && out.value === 0n) {
+        out.contractCall = true;
+      }
+      return out;
+    }
+    function payeeOf(tx) { return tx.token ? tx.token.recipient : tx.to; }
+    function amountText(tx) {
+      if (tx.token) {
+        const amt = tx.token.decimals === null ? `${tx.token.amount.toString()} (smallest units)` : formatUnits(tx.token.amount, tx.token.decimals);
+        return `${amt} ${tx.token.symbol}` + (tx.value > 0n ? ` + ${formatUnits(tx.value, 18)} XDC` : '');
+      }
+      return `${formatUnits(tx.value, 18)} XDC`;
+    }
+    function dateText(ts) { return ts ? new Date(ts * 1000).toUTCString().replace('GMT', 'UTC') : 'Unknown'; }
+
+    // ===== Address book =====
+    let entities = {};
+    function parseCsvLine(line) {
+      const result = []; let current = '', inQuotes = false;
+      for (let i = 0; i < line.length; i++) {
+        const ch = line[i], next = line[i + 1];
+        if (ch === '"') { if (inQuotes && next === '"') { current += '"'; i++; } else inQuotes = !inQuotes; }
+        else if (ch === ',' && !inQuotes) { result.push(current); current = ''; }
+        else current += ch;
+      }
+      result.push(current);
+      return result;
+    }
+    function csvLines(text) { return text.replace(/^﻿/, '').split(/\r?\n/).filter(l => l.trim() !== ''); }
+    function parseEntities(csvText) {
+      const map = {}, skipped = [];
+      const lines = csvLines(csvText);
+      if (!lines.length) return { map, skipped };
+      const headers = parseCsvLine(lines[0]).map(h => h.trim().toLowerCase());
+      const addrIdx = Math.max(0, headers.indexOf('address'));
+      for (let i = 1; i < lines.length; i++) {
+        const values = parseCsvLine(lines[i]);
+        const raw = (values[addrIdx] || '').trim().toLowerCase().replace(/^xdc/, '0x');
+        if (!/^0x[0-9a-f]{40}$/.test(raw)) { skipped.push(i + 1); continue; }
+        const entry = {};
+        headers.forEach((h, idx) => { if (idx !== addrIdx) entry[h] = (values[idx] || '').trim(); });
+        map[raw] = entry;
+      }
+      return { map, skipped };
+    }
+    function renderBook(skipped = []) {
+      const n = Object.keys(entities).length;
+      $('clearBookBtn').hidden = n === 0;
+      if (!n) {
+        setNotice('csvStatus', null, 'No address book saved yet. Upload or paste a CSV, or start from the sample.');
+        $('bookPreview').innerHTML = '';
+        return;
+      }
+      setNotice('csvStatus', 'ok', `<strong>${n} address${n === 1 ? '' : 'es'} saved</strong> in this browser.` + (skipped.length ? ` Skipped row${skipped.length > 1 ? 's' : ''} ${skipped.join(', ')} (missing or invalid address).` : ''));
+      const rows = Object.entries(entities).slice(0, 8).map(([a, e]) => `<tr><td>${escapeHtml(e.name || e.company || '–')}</td><td class="addr">${escapeHtml(shortAddr(a))}</td></tr>`).join('');
+      $('bookPreview').innerHTML = `<div class="table-wrap"><table class="book"><thead><tr><th>Name</th><th>Address</th></tr></thead><tbody>${rows}</tbody></table></div>` + (n > 8 ? `<p class="hint" style="margin-top:0.4rem">…and ${n - 8} more.</p>` : '');
+    }
+    function loadSavedCsv() {
+      const saved = store('get');
+      entities = saved ? parseEntities(saved).map : {};
+      renderBook();
+    }
+    function saveCsvToStorage(csvText) {
+      const { map, skipped } = parseEntities(csvText);
+      if (!Object.keys(map).length) {
+        setNotice('csvStatus', 'error', '<strong>No addresses found in that CSV.</strong> Check it has a header row and an <em>address</em> column with xdc… or 0x… addresses. The sample CSV shows the format.');
+        return false;
+      }
+      store('set', csvText);
+      entities = map;
+      renderBook(skipped);
+      track('proof/address-book-saved');
+      if (current) applyAutofill(current);
+      return true;
+    }
+    function clearCsvData() {
+      if (!confirm('Clear the saved address book from this browser?')) return;
+      store('del'); entities = {}; renderBook();
+    }
+    function toggleCsvPaste() {
+      const area = $('csvPasteArea'); area.hidden = !area.hidden;
+      $('pasteToggle').setAttribute('aria-expanded', String(!area.hidden));
+      if (!area.hidden) $('csvText').focus();
+    }
+    function saveCsvFromText() {
+      const text = $('csvText').value.trim();
+      if (!text) return setNotice('csvStatus', 'error', 'Paste your CSV text first.');
+      if (saveCsvToStorage(text)) { $('csvPasteArea').hidden = true; $('csvText').value = ''; $('pasteToggle').setAttribute('aria-expanded', 'false'); }
+    }
+    $('csvFile').addEventListener('change', async e => {
+      const file = e.target.files[0]; if (!file) return;
+      saveCsvToStorage(await file.text()); e.target.value = '';
+    });
+    function downloadSampleCsv() {
+      const csv = `"address","name","company","address_line","phone","email","logo_url"
+"xdc1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b","Acme Corp","Acme Corporation","123 Main St, Suite 100, New York, NY 10001","555-1000","acme@corp.com","https://example.com/acme.png"
+"xdc9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0","Global Trade","Global Trade Ltd","456 Port Ave, #12-34, Singapore 098765","555-2000","global@trade.com","https://example.com/global.png"`;
+      download('xdc_proof_entities_sample.csv', new Blob([csv], { type: 'text/csv' }));
+    }
+
+    // ===== Single receipt: lookup + autofill =====
+    let current = null, lookupSeq = 0, lastLookupError = '';
+    function markUserEdits() {
+      PARTY_FIELDS.forEach(id => $(id).addEventListener('input', () => { $(id).classList.remove('autofilled'); delete $(id).dataset.auto; }));
+    }
+    function clearAutofill() {
+      PARTY_FIELDS.forEach(id => { const el = $(id); if (el.dataset.auto) { el.value = ''; delete el.dataset.auto; el.classList.remove('autofilled'); } });
+      setNotice('autofillNote');
+    }
+    function partyFromEntity(e) { return e ? { name: e.name || e.company || '', address: e.address_line || '', phone: e.phone || '', email: e.email || '', logo: e.logo_url || '' } : null; }
+    function applyAutofill(tx) {
+      clearAutofill();
+      const fill = (id, value) => { const el = $(id); if (el && !el.value && value) { el.value = value; el.dataset.auto = '1'; el.classList.add('autofilled'); } };
+      const filled = [];
+      const p = partyFromEntity(entities[tx.from]);
+      if (p) { fill('purchaserName', p.name); fill('purchaserAddress', p.address); fill('purchaserPhone', p.phone); fill('purchaserEmail', p.email); filled.push(`purchaser (${p.name || shortAddr(tx.from)})`); }
+      const payee = payeeOf(tx);
+      const s = payee && partyFromEntity(entities[payee]);
+      if (s) { fill('sellerName', s.name); fill('sellerAddress', s.address); fill('sellerPhone', s.phone); fill('sellerEmail', s.email); fill('sellerLogo', s.logo); filled.push(`seller (${s.name || shortAddr(payee)})`); }
+      if (filled.length) setNotice('autofillNote', null, `Filled in from your address book: ${escapeHtml(filled.join(' and '))}. Highlighted fields can be edited.`);
+    }
+    function renderSummary(tx) {
+      const payee = payeeOf(tx);
+      const row = (k, v) => `<tr><th scope="row">${k}</th><td>${v}</td></tr>`;
+      const who = addr => { const e = entities[addr]; return `${e ? `<span class="who">${escapeHtml(e.name || e.company)}</span>` : ''}<span class="addr">${escapeHtml(toXdc(addr))}</span>`; };
+      $('txSummary').innerHTML = `<div class="txcard">
+        <div class="head"><span class="dot" aria-hidden="true"></span>Confirmed payment on ${escapeHtml(networkName(tx.chainId))}</div>
+        <table>
+          ${row('Amount', `<strong>${escapeHtml(amountText(tx))}</strong>`)}
+          ${row('Date', escapeHtml(dateText(tx.timestamp)))}
+          ${row('From (purchaser)', who(tx.from))}
+          ${row('To (seller)', payee ? who(payee) : 'Contract creation')}
+          ${tx.token ? row('Token contract', `<span class="addr">${escapeHtml(toXdc(tx.token.contract))}</span>`) : ''}
+          ${row('Network fee', `${escapeHtml(formatUnits(tx.fee, 18))} XDC`)}
+          ${row('Block', escapeHtml(tx.blockNumber.toLocaleString('en-US')))}
+        </table>
+        ${tx.contractCall ? `<p class="notice" data-tone="warn" style="margin:0.75rem 1rem">This is a contract interaction rather than a plain payment, so the receipt will show 0 XDC. Check it’s the transaction you meant.</p>` : ''}
+      </div>`;
+    }
+    async function lookup(hash) {
+      const seq = ++lookupSeq;
+      current = null;
+      clearAutofill();
+      setNotice('errorMessage');
+      $('txSummary').innerHTML = `<p class="loading"><span class="spinner" aria-hidden="true"></span>Looking up the transaction…</p>`;
+      try {
+        const tx = await fetchTx(hash);
+        if (seq !== lookupSeq) return null;
+        current = tx;
+        renderSummary(tx);
+        applyAutofill(tx);
+        return tx;
+      } catch (e) {
+        if (seq !== lookupSeq) return null;
+        lastLookupError = e.message;
+        $('txSummary').innerHTML = `<div class="txcard bad"><div class="head"><span class="dot" aria-hidden="true"></span>${escapeHtml(e.message)}</div></div>`;
+        return null;
+      }
+    }
+    let lookupTimer;
+    $('txHash').addEventListener('input', () => {
+      clearTimeout(lookupTimer);
+      const h = $('txHash').value.trim();
+      $('txHash').removeAttribute('aria-invalid');
+      if (/^0x[a-fA-F0-9]{64}$/.test(h)) lookupTimer = setTimeout(() => lookup(h), 250);
+      else { current = null; clearAutofill(); $('txSummary').innerHTML = h.length >= 66 ? `<div class="txcard bad"><div class="head"><span class="dot" aria-hidden="true"></span>That isn’t a valid transaction hash: it should be 0x followed by 64 characters.</div></div>` : ''; }
+    });
+    $('rpcUrl').addEventListener('change', () => { const h = $('txHash').value.trim(); if (/^0x[a-fA-F0-9]{64}$/.test(h)) lookup(h); });
+
+    // ===== Logo loading (any format, never hangs) =====
+    function loadLogo(url) {
+      return new Promise(resolve => {
+        if (!url) return resolve(null);
+        let src;
+        try { const u = new URL(url); u.searchParams.set('_xdcproof', Date.now()); src = u.toString(); } catch (_) { return resolve({ error: 'The logo URL isn’t a valid web address.' }); }
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        const timer = setTimeout(() => { img.src = ''; resolve({ error: 'The logo took too long to load.' }); }, 10000);
+        img.onload = () => {
+          clearTimeout(timer);
+          try {
+            const size = 400, scale = Math.min(size / img.naturalWidth, size / img.naturalHeight, 1);
+            const c = document.createElement('canvas');
+            c.width = Math.max(1, Math.round(img.naturalWidth * scale)); c.height = Math.max(1, Math.round(img.naturalHeight * scale));
+            c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+            resolve({ dataUrl: c.toDataURL('image/png'), w: c.width, h: c.height });
+          } catch (_) { resolve({ error: 'The image host doesn’t allow its images to be used on other sites.' }); }
+        };
+        img.onerror = () => { clearTimeout(timer); resolve({ error: 'The logo couldn’t be loaded. The link may be wrong, or the host may block it.' }); };
+        img.src = src;
+      });
+    }
+
+    // ===== Text in any language =====
+    // Tier 1: the PDF's built-in font (Western European text).
+    // Tier 2: embedded Noto fonts, downloaded only when needed (accented Latin, Greek, Cyrillic, Chinese, Japanese, Korean).
+    //         Only the characters used are stored in the PDF, and the text stays selectable.
+    // Tier 3: scripts that need letter-joining or right-to-left layout (Arabic, Hebrew, Hindi, Thai, emoji…) are
+    //         drawn by the browser, which shapes them correctly, and placed in the PDF as sharp images.
+    const FONT_DIR = 'vendor/fonts/';
+    const FONT_FILES = { NotoSans: 'NotoSans-Regular.ttf', NotoSansSC: 'NotoSansSC-Regular.ttf', NotoSansJP: 'NotoSansJP-Regular.ttf', NotoSansKR: 'NotoSansKR-Regular.ttf' };
+    const FONT_LABEL = { NotoSans: 'extended Latin, Greek and Cyrillic', NotoSansSC: 'Chinese', NotoSansJP: 'Japanese', NotoSansKR: 'Korean' };
+    const WINANSI_EXTRA = '\u20ac\u201a\u0192\u201e\u2026\u2020\u2021\u02c6\u2030\u0160\u2039\u0152\u017d\u2018\u2019\u201c\u201d\u2022\u2013\u2014\u02dc\u2122\u0161\u203a\u0153\u017e\u0178';
+    const RE_COMPLEX = /[\u0590-\u08FF\uFB1D-\uFDFF\uFE70-\uFEFF\u0900-\u0DFF\u0E00-\u0FFF\u1000-\u109F\u1780-\u18AF\u1A00-\u1CFF\uA800-\uABFF\u200D\uFE0F]|\p{Extended_Pictographic}/u;
+    const RE_KANA = /[\u3040-\u30FF\u31F0-\u31FF\uFF66-\uFF9F]/;
+    const RE_HANGUL = /[\uAC00-\uD7AF\u1100-\u11FF\u3130-\u318F]/;
+    const RE_CJK = /[\u2E80-\u2FDF\u3000-\u303F\u3400-\u4DBF\u4E00-\u9FFF\uF900-\uFAFF\uFF00-\uFF65]|[\u{20000}-\u{3134F}]/u;
+    const CANVAS_FONT = '"Noto Sans", "Segoe UI", "Helvetica Neue", Arial, "Noto Sans Arabic", "Noto Sans Hebrew", "Noto Sans Devanagari", Tahoma, system-ui, sans-serif';
+    const PX_PER_MM = 12;            // ~300 dpi for text drawn as images
+    const fontCache = {};            // family -> Promise<{ b64 }>
+
+    function isWinAnsi(str) {
+      for (const ch of str) {
+        const c = ch.codePointAt(0);
+        if (c === 9 || (c >= 0x20 && c <= 0x7e) || (c >= 0xa0 && c <= 0xff) || WINANSI_EXTRA.includes(ch)) continue;
+        return false;
+      }
+      return true;
+    }
+    function familyFor(str) {
+      if (isWinAnsi(str)) return 'helvetica';
+      if (RE_COMPLEX.test(str)) return 'image';
+      if (RE_KANA.test(str)) return 'NotoSansJP';
+      if (RE_HANGUL.test(str)) return 'NotoSansKR';
+      if (RE_CJK.test(str)) return 'NotoSansSC';
+      return 'NotoSans';
+    }
+    function loadFontData(family, onStatus) {
+      if (!fontCache[family]) {
+        if (onStatus) onStatus(`Loading ${FONT_LABEL[family]} font…`);
+        fontCache[family] = fetch(FONT_DIR + FONT_FILES[family])
+          .then(r => { if (!r.ok) throw new Error('font ' + r.status); return r.arrayBuffer(); })
+          .then(buf => {
+            const u = new Uint8Array(buf); let bin = '';
+            for (let i = 0; i < u.length; i += 0x8000) bin += String.fromCharCode.apply(null, u.subarray(i, i + 0x8000));
+            return { b64: btoa(bin) };
+          })
+          .catch(e => { delete fontCache[family]; throw e; });
+      }
+      return fontCache[family];
+    }
+    // Works out how each piece of text will be drawn, loading and registering fonts as needed.
+    async function prepareText(doc, strings, onStatus) {
+      const plan = new Map(), registered = new Set();
+      for (const str of strings) {
+        if (!str || plan.has(str)) continue;
+        let fam = familyFor(str);
+        if (fam !== 'helvetica' && fam !== 'image') {
+          try {
+            const data = await loadFontData(fam, onStatus);
+            if (!registered.has(fam)) { doc.addFileToVFS(fam + '.ttf', data.b64); doc.addFont(fam + '.ttf', fam, 'normal'); registered.add(fam); }
+            // Check the font has every character; otherwise draw the text as an image instead.
+            const codeMap = doc.internal.getFont(fam, 'normal')?.metadata?.cmap?.unicode?.codeMap;
+            if (codeMap) for (const ch of str) { const c = ch.codePointAt(0); if (c > 0x7e && c !== 0xa0 && !codeMap[c]) { fam = 'image'; break; } }
+          } catch (_) { fam = 'image'; }   // font couldn't be downloaded: fall back to the browser's own fonts
+        }
+        plan.set(str, fam);
+      }
+      return plan;
+    }
+
+    // Browser-drawn text (tier 3)
+    const measureCtx = document.createElement('canvas').getContext('2d');
+    function canvasFont(sizePt) { return `${(sizePt * 0.3528 * PX_PER_MM).toFixed(1)}px ${CANVAS_FONT}`; }
+    // Right-to-left only when every letter is Arabic/Hebrew script (e.g. a name). Mixed text keeps the receipt's left-to-right order.
+    function isRtl(str) {
+      const letters = str.match(/\p{L}/gu) || [];
+      return letters.length > 0 && letters.every(ch => /[\u0590-\u08FF\uFB1D-\uFDFF\uFE70-\uFEFF]/.test(ch));
+    }
+    function graphemes(str) { return window.Intl && Intl.Segmenter ? Array.from(new Intl.Segmenter(undefined, { granularity: 'grapheme' }).segment(str), s => s.segment) : Array.from(str); }
+    function wrapCanvas(text, maxWmm, sizePt) {
+      measureCtx.font = canvasFont(sizePt);
+      const maxPx = maxWmm * PX_PER_MM, width = t => measureCtx.measureText(t).width, out = [];
+      for (const para of String(text).split(/\n/)) {
+        let line = '';
+        for (let word of para.split(/(\s+)/)) {
+          if (width(line + word) <= maxPx) { line += word; continue; }
+          if (line.trim()) { out.push(line.trimEnd()); line = ''; word = word.trimStart(); if (width(word) <= maxPx) { line = word; continue; } }
+          // A single word wider than the line (common in Chinese or Thai): break between characters.
+          for (const g of graphemes(word)) { if (line && width(line + g) > maxPx) { out.push(line); line = ''; } line += g; }
+        }
+        out.push(line.trimEnd());
+      }
+      return out.length ? out : [''];
+    }
+    function drawCanvasLine(doc, line, xMm, baselineMm, sizePt, color = [44, 62, 80], rightEdgeMm = null) {
+      const fontPx = sizePt * 0.3528 * PX_PER_MM;
+      measureCtx.font = canvasFont(sizePt);
+      const w = Math.ceil(measureCtx.measureText(line).width) + 4, h = Math.ceil(fontPx * 1.6), base = Math.round(fontPx * 1.15);
+      const c = document.createElement('canvas'); c.width = Math.max(1, w); c.height = h;
+      const ctx = c.getContext('2d');
+      ctx.font = canvasFont(sizePt); ctx.fillStyle = `rgb(${color.join(',')})`; ctx.textBaseline = 'alphabetic';
+      ctx.direction = isRtl(line) ? 'rtl' : 'ltr'; ctx.textAlign = 'left';
+      ctx.fillText(line, 1, base);
+      if (rightEdgeMm !== null) xMm = rightEdgeMm - c.width / PX_PER_MM;
+      doc.addImage(c.toDataURL('image/png'), 'PNG', xMm, baselineMm - base / PX_PER_MM, c.width / PX_PER_MM, c.height / PX_PER_MM, undefined, 'FAST');
+    }
+    // Draw text in whichever way the plan says; returns line count. Leaves the font as helvetica normal.
+    function textLines(doc, plan, text, maxWmm, sizePt) {
+      const fam = plan.get(text) || 'helvetica';
+      if (fam === 'image') return { fam, lines: wrapCanvas(text, maxWmm, sizePt) };
+      doc.setFont(fam, 'normal');
+      const lines = doc.splitTextToSize(String(text), maxWmm);
+      doc.setFont('helvetica', 'normal');
+      return { fam, lines };
+    }
+    function drawLine(doc, fam, line, x, y, sizePt, rightEdge = null) {
+      if (fam === 'image') return drawCanvasLine(doc, line, x, y, sizePt, undefined, rightEdge);
+      doc.setFont(fam, 'normal'); doc.text(line, x, y); doc.setFont('helvetica', 'normal');
+    }
+
+    // ===== PDF =====
+    async function generateSinglePDF(tx, description, parties, logo, onStatus) {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      let y = 50;
+      const payeeAddr = payeeOf(tx);
+      const payerText = `${parties.purchaser.name || 'Unknown Purchaser'} (${toXdc(tx.from)})`;
+      const payeeText = `${parties.seller.name || 'Unknown Seller'} (${payeeAddr ? toXdc(payeeAddr) : 'Contract Creation'})`;
+      const plan = await prepareText(doc, [
+        ...Object.values(parties.seller), ...Object.values(parties.purchaser),
+        parties.seller.name || 'Unknown Seller', parties.purchaser.name || 'Unknown Purchaser',
+        payerText, payeeText, amountText(tx), description
+      ], onStatus);
+      const need = h => { if (y + h > 275) { doc.addPage(); y = 20; } };
+
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(18); doc.setTextColor(44, 62, 80);
+      doc.text('Payment Receipt', 105, 25, { align: 'center' });
+      doc.setFont('helvetica', 'normal');
+
+      if (logo && logo.dataUrl) {
+        const box = 30, r = Math.min(box / logo.w, box / logo.h);
+        const w = logo.w * r, h = logo.h * r;
+        try { doc.addImage(logo.dataUrl, 'PNG', 15 + (box - w) / 2, 10 + (box - h) / 2, w, h); } catch (_) {}
+      }
+
+      const scanUrl = explorerFor(tx.chainId) + tx.hash;
+      const qrCanvas = document.createElement('canvas');
+      await QRCode.toCanvas(qrCanvas, scanUrl, { width: 160, margin: 1 });
+      doc.addImage(qrCanvas.toDataURL('image/png'), 'PNG', 165, 10, 30, 30);
+      doc.setFontSize(8); doc.setTextColor(100, 100, 100);
+      doc.text('Scan to Verify Payment', 180, 45, { align: 'center' });
+      doc.setFontSize(12); doc.setTextColor(44, 62, 80);
+
+      const section = title => { need(24); doc.setFont('helvetica', 'bold'); doc.text(title, 15, y); doc.setFont('helvetica', 'normal'); doc.line(15, y + 3, 195, y + 3); y += 12; };
+      const field = (label, value) => {
+        doc.setFont('helvetica', 'bold');
+        const labelWidth = doc.getTextWidth(label + ':  ');
+        doc.setFont('helvetica', 'normal');
+        const { fam, lines } = textLines(doc, plan, String(value), 180 - labelWidth, 12);
+        need(lines.length * 7);
+        doc.setFont('helvetica', 'bold'); doc.text(label + ':  ', 15, y);
+        doc.setFont('helvetica', 'normal');
+        lines.forEach((line, i) => drawLine(doc, fam, line, 15 + labelWidth, y + i * 7, 12));
+        y += lines.length * 7;
+      };
+
+      section('Date');
+      const dl = doc.splitTextToSize(dateText(tx.timestamp), 180); doc.text(dl, 15, y); y += dl.length * 7 + 10;
+
+      const seller = parties.seller, purchaser = parties.purchaser;
+      [['Seller', seller, 'Unknown Seller'], ['Purchaser', purchaser, 'Unknown Purchaser']].forEach(([role, info, fallback]) => {
+        section(`${role} Information`);
+        field('Name', info.name || fallback);
+        if (info.address) field('Address', info.address);
+        if (info.phone) field('Phone', info.phone);
+        if (info.email) field('Email', info.email);
+        y += 10;
+      });
+
+      section('Transaction Details');
+      field('Hash', tx.hash);
+      field('Status', `Confirmed in block ${tx.blockNumber.toLocaleString('en-US')}`);
+      field('Network', networkName(tx.chainId));
+      field('Payer', payerText);
+      field('Payee', payeeText);
+      field('Amount', amountText(tx));
+      if (tx.token) field('Token contract', toXdc(tx.token.contract));
+      field('Network fee', `${formatUnits(tx.fee, 18)} XDC (paid by payer)`);
+
+      y += 10;
+      section('Payment Purpose');
+      const desc = textLines(doc, plan, description, 180, 12);
+      const descRtl = desc.fam === 'image' && isRtl(description);   // Arabic/Hebrew paragraphs line up on the right
+      desc.lines.forEach(line => { need(7); drawLine(doc, desc.fam, line, 15, y, 12, descRtl ? 195 : null); y += 7; });
+
+      const pages = doc.getNumberOfPages();
+      for (let i = 1; i <= pages; i++) {
+        doc.setPage(i); doc.setFontSize(9); doc.setTextColor(120, 120, 120);
+        doc.text('Generated with XDC Proof • https://xdcoutpost.xyz/XDC_Proof/' + (pages > 1 ? `  (page ${i} of ${pages})` : ''), 105, 285, { align: 'center' });
+      }
+      return doc;
+    }
+
+    function readParties() {
+      const v = id => $(id).value.trim();
+      return {
+        seller: { name: v('sellerName'), address: v('sellerAddress'), phone: v('sellerPhone'), email: v('sellerEmail') },
+        purchaser: { name: v('purchaserName'), address: v('purchaserAddress'), phone: v('purchaserPhone'), email: v('purchaserEmail') }
+      };
+    }
+    function fail(msg, fieldId) {
+      setNotice('errorMessage', 'error', msg);
+      if (fieldId) { $(fieldId).setAttribute('aria-invalid', 'true'); $(fieldId).focus(); }
+    }
+
+    async function generateReceipt() {
+      ['txHash', 'description', 'sellerEmail', 'purchaserEmail', 'sellerPhone', 'purchaserPhone'].forEach(id => $(id).removeAttribute('aria-invalid'));
+      setNotice('errorMessage');
+      const txHash = $('txHash').value.trim();
+      const description = $('description').value.trim();
+      if (!/^0x[a-fA-F0-9]{64}$/.test(txHash)) return fail('Enter a transaction hash: 0x followed by 64 characters.', 'txHash');
+      if (!description) return fail('Add what the payment was for. It’s printed on the receipt.', 'description');
+      for (const id of ['sellerEmail', 'purchaserEmail']) { const v = $(id).value.trim(); if (v && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v)) return fail('That email address doesn’t look right.', id); }
+      for (const id of ['sellerPhone', 'purchaserPhone']) { const v = $(id).value.trim(); if (v && !/^[+0-9()\-.\s]+$/.test(v)) return fail('Phone numbers can contain digits, spaces, +, -, brackets and dots.', id); }
+
+      const btn = $('generateSingleBtn');
+      btn.disabled = true; btn.textContent = 'Creating receipt…';
+      try {
+        let tx = current && current.hash.toLowerCase() === txHash.toLowerCase() ? current : await lookup(txHash);
+        if (!tx) return fail('<strong>No receipt created.</strong> ' + escapeHtml(lastLookupError || 'The transaction couldn’t be looked up.'));
+        const logo = await loadLogo($('sellerLogo').value.trim());
+        const doc = await generateSinglePDF(tx, description, readParties(), logo, msg => { btn.textContent = msg; });
+        doc.save(`XDC_Proof_${tx.hash.slice(0, 10)}.pdf`);
+        track('proof/receipt-created');
+        if (logo && logo.error) setNotice('errorMessage', 'warn', `<strong>Receipt downloaded without the logo.</strong> ${escapeHtml(logo.error)} Try hosting the image somewhere else, such as your own website or GitHub.`);
+        else setNotice('errorMessage', 'ok', `<strong>Receipt downloaded</strong> as XDC_Proof_${escapeHtml(tx.hash.slice(0, 10))}.pdf.`);
+      } catch (error) {
+        console.error(error);
+        fail(escapeHtml(error.message || 'Something went wrong creating the PDF.'));
+      } finally {
+        btn.disabled = false; btn.textContent = 'Download PDF receipt';
+      }
+    }
+
+    // ===== Batch =====
+    let batchTxs = [], isBatchRunning = false, cancelBatchFlag = false;
+    $('batchCsvFile').addEventListener('change', async e => {
+      const file = e.target.files[0]; if (!file) return;
+      const lines = csvLines(await file.text()); e.target.value = '';
+      batchTxs = []; const skipped = [];
+      if (!lines.length) return setNotice('batchStatus', 'error', 'That file is empty.');
+      const header = parseCsvLine(lines[0]).map(h => h.trim().toLowerCase());
+      const hasHeader = header.includes('tx_hash') || header.includes('description');
+      const hIdx = hasHeader ? Math.max(0, header.indexOf('tx_hash')) : 0;
+      const dIdx = hasHeader ? (header.indexOf('description') >= 0 ? header.indexOf('description') : 1) : 1;
+      const seen = new Set();
+      lines.slice(hasHeader ? 1 : 0).forEach((line, i) => {
+        const rowNo = i + (hasHeader ? 2 : 1);
+        const v = parseCsvLine(line);
+        const hash = (v[hIdx] || '').trim(), desc = (v[dIdx] || '').trim();
+        if (!/^0x[a-fA-F0-9]{64}$/.test(hash)) return skipped.push(`row ${rowNo}: invalid hash`);
+        if (!desc) return skipped.push(`row ${rowNo}: no description`);
+        if (seen.has(hash.toLowerCase())) return skipped.push(`row ${rowNo}: duplicate hash`);
+        seen.add(hash.toLowerCase());
+        batchTxs.push({ hash, description: desc, row: rowNo });
+      });
+      const skipHtml = skipped.length ? `<ul class="skips">${skipped.slice(0, 10).map(s => `<li>${escapeHtml(s)}</li>`).join('')}${skipped.length > 10 ? `<li>…and ${skipped.length - 10} more</li>` : ''}</ul>` : '';
+      setNotice('batchStatus', batchTxs.length ? 'ok' : 'error', `<strong>${batchTxs.length} transaction${batchTxs.length === 1 ? '' : 's'} ready.</strong>${skipped.length ? ` ${skipped.length} row${skipped.length > 1 ? 's' : ''} skipped:` : ''}${skipHtml}`);
+      $('generateBatchBtn').hidden = batchTxs.length === 0;
+      $('generateBatchBtn').textContent = `Create ${batchTxs.length} receipt${batchTxs.length === 1 ? '' : 's'}`;
+    });
+    function startBatchGeneration() {
+      if (!batchTxs.length || isBatchRunning) return;
+      isBatchRunning = true; cancelBatchFlag = false;
+      $('batchProgress').hidden = false; $('generateBatchBtn').hidden = true;
+      generateBatchPDFs();
+    }
+    function cancelBatch() { cancelBatchFlag = true; }
+    async function generateBatchPDFs() {
+      const zip = new JSZip(), rpcUrl = getRpcUrl(), logoCache = {}, results = [];
+      let made = 0;
+      for (let i = 0; i < batchTxs.length; i++) {
+        if (cancelBatchFlag) break;
+        const { hash, description, row } = batchTxs[i];
+        try {
+          const tx = await fetchTx(hash, rpcUrl);
+          const p = partyFromEntity(entities[tx.from]) || {};
+          const payee = payeeOf(tx);
+          const s = (payee && partyFromEntity(entities[payee])) || {};
+          if (s.logo && !(s.logo in logoCache)) logoCache[s.logo] = await loadLogo(s.logo);
+          const parties = { seller: { name: s.name || '', address: s.address || '', phone: s.phone || '', email: s.email || '' }, purchaser: { name: p.name || '', address: p.address || '', phone: p.phone || '', email: p.email || '' } };
+          const doc = await generateSinglePDF(tx, description, parties, s.logo ? logoCache[s.logo] : null, msg => { $('progressText').textContent = `${i + 1} / ${batchTxs.length}: ${msg}`; });
+          const name = `XDC_Proof_${hash.slice(0, 10)}.pdf`;
+          zip.file(name, doc.output('blob'));
+          made++;
+          results.push([row, hash, 'created', name]);
+        } catch (e) {
+          console.error(`Failed ${hash}:`, e);
+          results.push([row, hash, 'skipped', e.message || 'error']);
+        }
+        const pct = Math.round(((i + 1) / batchTxs.length) * 100);
+        $('progressBar').style.width = pct + '%'; $('progressWrap').setAttribute('aria-valuenow', pct);
+        $('progressText').textContent = `${i + 1} / ${batchTxs.length}`;
+      }
+      const failed = results.filter(r => r[2] === 'skipped');
+      if (cancelBatchFlag) {
+        setNotice('batchStatus', 'warn', `<strong>Batch cancelled</strong> after ${results.length} of ${batchTxs.length}. Nothing was downloaded.`);
+      } else if (made > 0) {
+        const csv = [['row', 'tx_hash', 'result', 'file_or_reason'], ...results].map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(',')).join('\r\n');
+        zip.file('summary.csv', csv);
+        download(`XDC_Proof_Batch_${new Date().toISOString().slice(0, 10)}.zip`, await zip.generateAsync({ type: 'blob' }));
+        track('proof/batch-created');
+        setNotice('batchStatus', failed.length ? 'warn' : 'ok', `<strong>${made} receipt${made === 1 ? '' : 's'} downloaded</strong> in a ZIP.` + (failed.length ? ` ${failed.length} couldn’t be made:<ul class="skips">${failed.slice(0, 10).map(f => `<li>row ${f[0]}: ${escapeHtml(f[3])}</li>`).join('')}${failed.length > 10 ? `<li>…see summary.csv in the ZIP</li>` : ''}</ul>` : ''));
+      } else {
+        setNotice('batchStatus', 'error', `<strong>No receipts could be made.</strong><ul class="skips">${failed.slice(0, 10).map(f => `<li>row ${f[0]}: ${escapeHtml(f[3])}</li>`).join('')}</ul>`);
+      }
+      isBatchRunning = false;
+      $('batchProgress').hidden = true; $('generateBatchBtn').hidden = false;
+    }
+    function downloadSampleBatchCsv() {
+      const csv = `"tx_hash","description"
+"0x7f8c9d2b1a3e4f5c6d7b8a9e0f1c2d3b4e5a6f7c8d9e0a1b2c3d4e5f6a7b8c9","Invoice #501: 500 Widgets"
+"0x1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b","Consulting Q3 2026"`;
+      download('xdc_proof_batch_sample.csv', new Blob([csv], { type: 'text/csv' }));
+    }
+
+    // ===== Init =====
+    markUserEdits();
+    loadSavedCsv();
+    try { QRCode.toCanvas($('sampleQr'), 'https://xdcscan.com', { width: 64, margin: 0, color: { dark: '#2C3E50', light: '#FBFAFF' } }); } catch (_) {}
+  </script>
+</body>
+</html>
